@@ -19,18 +19,16 @@ export default function ErrorPanel({ title = "The runs could not be loaded", mes
   }
 
   return (
-    <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-6">
-      <h2 className="text-lg font-semibold text-red-800">{title}</h2>
-      <p className="mt-2 text-sm text-red-700">{message}</p>
-      <p className="mt-2 text-sm text-slate-600">
+    <div
+      role="alert"
+      className="rounded-2xl border border-failed/30 bg-gradient-to-b from-failed/10 to-failed/[0.04] p-6"
+    >
+      <h2 className="text-lg font-semibold text-[#f9a8d4]">{title}</h2>
+      <p className="mt-2 text-sm text-[#fce7f3]">{message}</p>
+      <p className="mt-2 text-sm text-muted">
         The free backend goes to sleep when idle and can take up to a minute to wake up. Wait a moment and try again.
       </p>
-      <button
-        type="button"
-        onClick={retry}
-        disabled={isPending}
-        className="mt-4 rounded bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:opacity-60"
-      >
+      <button type="button" onClick={retry} disabled={isPending} className="outline-button mt-4 disabled:opacity-60">
         {isPending ? "Retrying…" : "Try again"}
       </button>
     </div>
