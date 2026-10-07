@@ -69,6 +69,11 @@ export function formatStepValue(text: string): string {
   }
 }
 
+// The id of a step's card. The card, the "Jump to step" link and the expand-on-hash logic all use it.
+export function stepAnchorId(stepIndex: number): string {
+  return `step-${stepIndex}`;
+}
+
 // The backend keeps a negative duration as-is (run_0064) and warns about it, so the UI has to spot it.
 export function hasInvalidDuration(run: Pick<RunBase, "duration_ms">): boolean {
   return run.duration_ms !== null && run.duration_ms < 0;

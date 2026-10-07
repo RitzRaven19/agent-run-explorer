@@ -7,6 +7,7 @@ import {
   formatPercent,
   formatPricedTotal,
   formatStepValue,
+  stepAnchorId,
 } from "@/lib/format";
 
 describe("costs", () => {
@@ -55,6 +56,13 @@ describe("dates", () => {
   it("labels a chart day the same way the backend counts it", () => {
     expect(formatDayLabel("2026-08-01")).toBe("1 Aug");
     expect(formatDayLabel("2026-07-20")).toBe("20 Jul");
+  });
+});
+
+describe("step anchors", () => {
+  it("names a step's card after its index, which starts at 0", () => {
+    expect(stepAnchorId(0)).toBe("step-0");
+    expect(stepAnchorId(3)).toBe("step-3");
   });
 });
 

@@ -1,3 +1,4 @@
+import { stepAnchorId } from "@/lib/format";
 import type { Run } from "@/lib/types";
 
 export default function RunErrorBox({ run }: { run: Run }) {
@@ -15,7 +16,7 @@ export default function RunErrorBox({ run }: { run: Run }) {
         <p className="mt-2 text-red-900">
           Happened at step {failedStep.index} ({failedStep.name}).{" "}
           {/* A plain <a>, not next/link: only a real hash navigation updates the :target highlight. */}
-          <a href={`#step-${failedStep.index}`} className="font-medium underline">
+          <a href={`#${stepAnchorId(failedStep.index)}`} className="font-medium underline">
             Jump to step {failedStep.index}
           </a>
         </p>

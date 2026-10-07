@@ -1,6 +1,6 @@
 import StatusBadge from "@/components/StatusBadge";
 import StepValue from "@/components/StepValue";
-import { formatDurationSeconds, formatStepValue, formatTimeUtc } from "@/lib/format";
+import { formatDurationSeconds, formatStepValue, formatTimeUtc, stepAnchorId } from "@/lib/format";
 import type { Run, Step } from "@/lib/types";
 
 function borderStyle(isFailing: boolean, isRunning: boolean): string {
@@ -20,7 +20,7 @@ function StepCard({ step, isFailing }: { step: Step; isFailing: boolean }) {
   return (
     // scroll-mt leaves a gap above the card when #step-N scrolls it to the top; target: styles the card the URL points at.
     <li
-      id={`step-${step.index}`}
+      id={stepAnchorId(step.index)}
       className={`scroll-mt-4 rounded-lg border bg-white p-4 target:bg-blue-50 target:ring-2 target:ring-blue-400 ${borderStyle(isFailing, isRunning)}`}
     >
       <div className="flex flex-wrap items-center gap-2">
