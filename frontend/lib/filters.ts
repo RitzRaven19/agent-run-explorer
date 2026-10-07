@@ -25,6 +25,9 @@ export type RunFilters = {
   page_size: number;
 };
 
+// The longest search the backend accepts (it answers 422 above this), so the search box stops typing here.
+export const SEARCH_MAX_LENGTH = 200;
+
 export const DEFAULT_FILTERS: RunFilters = {
   status: [],
   agent: [],

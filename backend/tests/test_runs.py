@@ -208,6 +208,12 @@ def test_broken_records_carry_warnings(client):
     assert by_id["run_0001"]["warnings"] == []
 
 
+@pytest.mark.parametrize("path", ["/api/runs", "/api/stats"])
+def test_search_text_is_limited_to_200_characters(client, path):
+    assert client.get(path, params={"q": "x" * 200}).status_code == 200
+    assert client.get(path, params={"q": "x" * 201}).status_code == 422
+
+
 @pytest.mark.parametrize(
     "params",
     [

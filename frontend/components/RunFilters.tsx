@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { STATUS_COLORS } from "@/lib/statusColors";
 import type { FilterCounts } from "@/lib/filterCounts";
-import { activeFilterCount, parseFilters, toSearchParams, type RunFilters as Filters } from "@/lib/filters";
+import { activeFilterCount, parseFilters, SEARCH_MAX_LENGTH, toSearchParams, type RunFilters as Filters } from "@/lib/filters";
 import { AGENT_NAMES, RUN_STATUSES, SORT_FIELDS, TOOL_NAMES, type SortField } from "@/lib/types";
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -167,6 +167,7 @@ export default function RunFilters({ counts }: { counts: FilterCounts | null }) 
               id="search"
               type="search"
               placeholder="e.g. apology"
+              maxLength={SEARCH_MAX_LENGTH}
               className="field"
               value={typedQuery}
               onChange={(event) => setTypedQuery(event.target.value)}

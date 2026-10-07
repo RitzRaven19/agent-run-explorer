@@ -40,7 +40,7 @@ def get_filters(
     tool: Annotated[list[ToolName] | None, Query()] = None,
     started_from: date | None = None,
     started_to: date | None = None,
-    q: str | None = None,
+    q: Annotated[str | None, Query(max_length=200)] = None,
 ) -> RunFilters:
     """The filter params shared by /api/runs and /api/stats, validated in one place."""
     if started_from and started_to and started_from > started_to:
