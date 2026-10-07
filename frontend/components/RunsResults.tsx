@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ErrorPanel from "@/components/ErrorPanel";
+import KeyboardRows from "@/components/KeyboardRows";
 import RequestIndicator from "@/components/RequestIndicator";
 import { CostValue, DurationValue, WarningMark } from "@/components/RunValues";
 import StatusBadge from "@/components/StatusBadge";
@@ -17,9 +18,14 @@ function runsHref(filters: RunFilters, page: number): string {
 
 function RunRow({ run, filters }: { run: RunSummary; filters: RunFilters }) {
   return (
-    <tr className="border-t border-slate-100 align-top">
+    // focus-within highlights the whole row while its link has focus (keyboard "selection").
+    <tr className="border-t border-slate-100 align-top focus-within:bg-blue-50">
       <td className="whitespace-nowrap px-3 py-2">
-        <Link href={runDetailHref(run.id, filters)} className="font-mono text-blue-700 hover:underline">
+        <Link
+          href={runDetailHref(run.id, filters)}
+          data-run-link
+          className="font-mono text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        >
           {run.id}
         </Link>{" "}
         {run.warnings.length > 0 && <WarningMark text={run.warnings.join("\n")} />}
@@ -120,28 +126,33 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
     <div>
       <p className="mb-2 text-sm text-slate-600">
         Showing {first}–{last} of {total}
+        <span id="keyboard-hint" className="ml-3 hidden text-xs text-slate-500 md:inline">
+          Tip: Tab into the table, then ↑ ↓ to move between runs and Enter to open one.
+        </span>
       </p>
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-slate-100 text-xs uppercase text-slate-600">
-            <tr>
-              <th className="px-3 py-2">Run</th>
-              <th className="px-3 py-2">Agent</th>
-              <th className="px-3 py-2">Status</th>
-              <th className="px-3 py-2">Started</th>
-              <th className="px-3 py-2 text-right">Duration</th>
-              <th className="px-3 py-2 text-right">Cost</th>
-              <th className="px-3 py-2 text-right">Steps</th>
-              <th className="px-3 py-2">Prompt</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((run) => (
-              <RunRow key={run.id} run={run} filters={filters} />
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <KeyboardRows hintId="keyboard-hint">
+        <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-100 text-xs uppercase text-slate-600">
+              <tr>
+                <th className="px-3 py-2">Run</th>
+                <th className="px-3 py-2">Agent</th>
+                <th className="px-3 py-2">Status</th>
+                <th className="px-3 py-2">Started</th>
+                <th className="px-3 py-2 text-right">Duration</th>
+                <th className="px-3 py-2 text-right">Cost</th>
+                <th className="px-3 py-2 text-right">Steps</th>
+                <th className="px-3 py-2">Prompt</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((run) => (
+                <RunRow key={run.id} run={run} filters={filters} />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </KeyboardRows>
       <Pagination filters={filters} lastPage={lastPage} />
       {indicator}
     </div>
