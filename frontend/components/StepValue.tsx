@@ -26,13 +26,15 @@ export default function StepValue({ text, anchorId }: { text: string; anchorId: 
 
   return (
     <div>
-      <pre className="whitespace-pre-wrap break-words rounded bg-slate-50 p-2 font-mono text-xs">{shownText}</pre>
+      <pre className="rounded-[10px] border border-white/[0.06] bg-black/40 p-3 font-mono text-[12.5px] break-words whitespace-pre-wrap text-soft [overflow-wrap:anywhere]">
+        {shownText}
+      </pre>
       {isLong && (
         <button
           type="button"
           aria-expanded={isExpanded}
           onClick={() => setIsExpanded(!isExpanded)}
-          className="mt-1 text-xs text-blue-700 hover:underline"
+          className="mt-1 cursor-pointer text-xs text-accent hover:underline"
         >
           {isExpanded ? "Show less" : `Show more (${lines.length - COLLAPSED_LINES} more lines)`}
         </button>

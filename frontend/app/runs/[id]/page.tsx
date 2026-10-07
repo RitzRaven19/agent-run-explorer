@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/runs/[id]">): Pro
 
 function BackLink({ href }: { href: string }) {
   return (
-    <Link href={href} className="text-sm text-blue-700 hover:underline">
+    <Link href={href} className="self-start text-[13px] text-muted">
       ← Back to runs
     </Link>
   );
@@ -35,7 +35,7 @@ export default async function RunPage({ params, searchParams }: PageProps<"/runs
     run = await fetchRun(id);
   } catch (error) {
     return (
-      <div className="space-y-4">
+      <div className="flex flex-col gap-[22px] pt-10 pb-[72px]">
         <BackLink href={backHref} />
         <ErrorPanel title="This run could not be loaded" message={describeError(error)} />
       </div>
@@ -45,7 +45,7 @@ export default async function RunPage({ params, searchParams }: PageProps<"/runs
   if (run === null) notFound();
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-[22px] pt-10 pb-[72px]">
       <BackLink href={backHref} />
       <RunHeader run={run} />
       <RunWarnings warnings={run.warnings} />

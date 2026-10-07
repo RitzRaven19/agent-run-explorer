@@ -78,52 +78,58 @@ export default function ExplainRun({ runId }: { runId: string }) {
     return "Explain this run";
   }
 
+  // While text streams, a light runs round the card's border; the rest of the time it has a plain frosted border.
+  const cardStyle = isStreaming
+    ? "beam rounded-2xl"
+    : "rounded-2xl border border-[rgba(167,139,250,0.18)] bg-linear-to-b from-[rgba(139,92,246,0.11)] to-[rgba(76,29,149,0.05)]";
+  const startStyle = isStreaming
+    ? "bg-white/[0.08] text-dim"
+    : "bg-linear-to-br from-[#7c3aed] to-[#4c1d95] text-white shadow-[0_0_26px_rgba(139,92,246,0.55)]";
+
   return (
-    <section aria-labelledby="explain-title" className="rounded-lg border border-slate-200 bg-white p-5">
-      <div className="flex flex-wrap items-center gap-3">
-        <h2 id="explain-title" className="text-lg font-semibold">
-          Explanation
-        </h2>
-        {status !== "error" && (
-          <button
-            type="button"
-            onClick={explain}
-            disabled={!isHydrated || isStreaming}
-            className="rounded bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:opacity-60"
-          >
-            {buttonLabel()}
-          </button>
+    <section aria-labelledby="explain-title" className={cardStyle}>
+      <div className="flex flex-col gap-3.5 p-[22px]">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 id="explain-title" className="text-lg font-semibold">
+            Explanation
+          </h2>
+          {status !== "error" && (
+            <button
+              type="button"
+              onClick={explain}
+              disabled={!isHydrated || isStreaming}
+              className={`min-h-10 cursor-pointer rounded-[10px] border border-white/25 px-4 text-sm font-medium disabled:cursor-default ${startStyle} ${
+                !isHydrated ? "opacity-60" : ""
+              }`}
+            >
+              {buttonLabel()}
+            </button>
+          )}
+          {isStreaming && (
+            <button type="button" onClick={stop} className="outline-button border-white/[0.18]">
+              Stop
+            </button>
+          )}
+          {status === "stopped" && <span className="text-xs text-muted">Stopped before the end.</span>}
+        </div>
+
+        {status === "idle" && (
+          <p className="text-sm text-muted">Get a short plain-English summary of what this run did, streamed word by word.</p>
         )}
-        {isStreaming && (
-          <button
-            type="button"
-            onClick={stop}
-            className="rounded border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100"
-          >
-            Stop
-          </button>
+        {status === "error" ? (
+          <ErrorPanel title="The explanation could not be loaded" message={errorMessage} onRetry={explain} />
+        ) : (
+          // polite: screen readers read the new text when the user is idle instead of interrupting them.
+          <div aria-live="polite" className="text-[15px] leading-[1.65] break-words whitespace-pre-wrap text-ink">
+            {text}
+            {isStreaming && (
+              <span aria-hidden="true" className="cursor text-white">
+                ▍
+              </span>
+            )}
+          </div>
         )}
       </div>
-
-      {status === "idle" && (
-        <p className="mt-3 text-sm text-slate-500">Get a short plain-English summary of what this run did.</p>
-      )}
-      {status === "error" ? (
-        <div className="mt-4">
-          <ErrorPanel title="The explanation could not be loaded" message={errorMessage} onRetry={explain} />
-        </div>
-      ) : (
-        // polite: screen readers read the new text when the user is idle instead of interrupting them.
-        <div aria-live="polite" className="mt-3 whitespace-pre-wrap break-words text-sm leading-relaxed">
-          {text}
-          {isStreaming && (
-            <span aria-hidden="true" className="ml-0.5 animate-pulse">
-              ▍
-            </span>
-          )}
-        </div>
-      )}
-      {status === "stopped" && <p className="mt-2 text-xs text-slate-500">Stopped before the end.</p>}
     </section>
   );
 }
