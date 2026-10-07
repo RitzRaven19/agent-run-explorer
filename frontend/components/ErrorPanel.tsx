@@ -4,12 +4,13 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
 type ErrorPanelProps = {
+  title?: string;
   message: string;
   // error.tsx passes Next's retry(); without it the panel refetches the page's server data itself.
   onRetry?: () => void;
 };
 
-export default function ErrorPanel({ message, onRetry }: ErrorPanelProps) {
+export default function ErrorPanel({ title = "The runs could not be loaded", message, onRetry }: ErrorPanelProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -19,7 +20,7 @@ export default function ErrorPanel({ message, onRetry }: ErrorPanelProps) {
 
   return (
     <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-6">
-      <h2 className="text-lg font-semibold text-red-800">The runs could not be loaded</h2>
+      <h2 className="text-lg font-semibold text-red-800">{title}</h2>
       <p className="mt-2 text-sm text-red-700">{message}</p>
       <p className="mt-2 text-sm text-slate-600">
         The free backend goes to sleep when idle and can take up to a minute to wake up. Wait a moment and try again.
