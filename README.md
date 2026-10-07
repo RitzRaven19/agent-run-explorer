@@ -30,6 +30,28 @@ Mapped to the brief's "Must build":
 
 Data problems in the dataset (a duplicate id, a negative duration, a run with no steps, unpriced runs) are detected at load time, reported in `data_warnings`, and shown in the UI. See [DECISIONS.md](DECISIONS.md).
 
+## Brief checklist
+
+| Brief item | Where it is |
+|---|---|
+| **Must:** `GET /api/runs` (pagination, multi-value filters, date range, search, sort, composing) | `backend/app/main.py` (`list_runs`, shared `get_filters`), `backend/app/filters.py` |
+| **Must:** `GET /api/runs/{id}` with a proper 404 | `backend/app/main.py` (`get_run`) |
+| **Must:** `GET /api/stats` | `backend/app/stats.py`, `backend/app/main.py` (`get_stats`) |
+| **Must:** `POST /api/runs/{id}/explain`, streamed, mock provider | `backend/app/explain.py`, `backend/app/main.py` (`explain_run`) |
+| **Must:** `/runs` with URL state, loading, empty and error states | `frontend/app/runs/`, `frontend/components/RunFilters.tsx`, `RunsResults.tsx`, `frontend/lib/filters.ts` |
+| **Must:** `/runs/[id]` with error, steps, streaming Explain | `frontend/app/runs/[id]/page.tsx`, `StepsTimeline.tsx`, `StepValue.tsx`, `ExplainRun.tsx` |
+| **Must:** `/dashboard` with charts | `frontend/app/dashboard/page.tsx`, `frontend/components/charts/` |
+| **Must:** backend tests (filters compose, a hand-computed statistic) | `backend/tests/test_runs.py`, `backend/tests/test_stats.py` with `fixtures/stats_fixture.jsonl` |
+| **Must:** a frontend test | `frontend/tests/` (Vitest) |
+| **Must:** the four decisions, 20-million-run answer, what's next | [DECISIONS.md](DECISIONS.md) |
+| **Should:** `tool` filter | `filters.py` and `main.py` (backend), `RunFilters.tsx` chips (frontend) |
+| **Should:** deep link to a step, opened expanded | `frontend/lib/useLocationHash.ts`, `StepValue.tsx` |
+| **Should:** keyboard navigation in the list | `frontend/components/KeyboardRows.tsx`, `frontend/lib/rowNavigation.ts` |
+| **Should:** request duration and count indicator | `frontend/components/RequestIndicator.tsx`, `frontend/lib/requestCounter.ts`, `fetchRunsTimed` in `frontend/lib/api.ts` |
+| **Stretch:** cursor pagination, 500-step runs, Docker Compose | Not built. |
+
+More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (design and request flows) and [SECURITY.md](SECURITY.md) (current posture and what production would need).
+
 ## Architecture
 
 ```mermaid
