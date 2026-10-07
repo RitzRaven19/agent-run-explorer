@@ -4,12 +4,14 @@
 export const RUN_STATUSES = ["succeeded", "failed", "cancelled", "running"] as const;
 export type RunStatus = (typeof RUN_STATUSES)[number];
 
-export type AgentName =
-  | "contract-reviewer"
-  | "email-drafter"
-  | "invoice-extractor"
-  | "kpi-analyst"
-  | "support-router";
+export const AGENT_NAMES = [
+  "contract-reviewer",
+  "email-drafter",
+  "invoice-extractor",
+  "kpi-analyst",
+  "support-router",
+] as const;
+export type AgentName = (typeof AGENT_NAMES)[number];
 
 export type ToolName = "llm" | "sql" | "http" | "vector_search" | "none";
 
