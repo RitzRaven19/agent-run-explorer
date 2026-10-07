@@ -4,6 +4,8 @@ import {
   backToRunsHref,
   parseFilters,
   runDetailHref,
+  runsForAgentHref,
+  runsForDayHref,
   runsListHref,
   toSearchParams,
   type RunFilters,
@@ -109,6 +111,14 @@ describe("links between the list and a run", () => {
     expect(backToRunsHref("status=failed&agent=kpi-analyst&page=2")).toBe(
       "/runs?status=failed&agent=kpi-analyst&page=2",
     );
+  });
+
+  it("links a dashboard day to exactly that day's runs", () => {
+    expect(runsForDayHref("2026-08-11")).toBe("/runs?started_from=2026-08-11&started_to=2026-08-11");
+  });
+
+  it("links a dashboard agent to that agent's runs", () => {
+    expect(runsForAgentHref("kpi-analyst")).toBe("/runs?agent=kpi-analyst");
   });
 
   it.each([undefined, "", "//evil.com", "https://evil.com", "javascript:alert(1)"])(
