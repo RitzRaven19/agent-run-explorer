@@ -88,3 +88,46 @@ class RunListResponse(BaseModel):
     total: int
     page: int
     page_size: int
+
+
+class HealthResponse(BaseModel):
+    status: Literal["ok"]
+    run_count: int
+    data_warnings: list[str]
+
+
+class StatusCounts(BaseModel):
+    total: int
+    succeeded: int
+    failed: int
+    cancelled: int
+    running: int
+    # None when no run has finished yet, so we never divide by zero.
+    success_rate: float | None
+
+
+class AgentStats(StatusCounts):
+    agent: AgentName
+    # Sum of priced runs only. A null cost is never counted as 0.
+    total_cost_usd: float
+    priced_count: int
+    unpriced_count: int
+
+
+class DurationStats(BaseModel):
+    median_ms: Number | None
+    p95_ms: Number | None
+    completed_count: int
+
+
+class DayCount(BaseModel):
+    date: str
+    count: int
+
+
+class StatsResponse(BaseModel):
+    overall: StatusCounts
+    per_agent: list[AgentStats]
+    duration: DurationStats
+    runs_per_day: list[DayCount]
+    data_warnings: list[str]
