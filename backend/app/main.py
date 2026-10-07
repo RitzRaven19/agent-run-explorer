@@ -11,7 +11,7 @@ from fastapi.responses import StreamingResponse
 from app import data
 from app.explain import get_provider
 from app.filters import RunFilters, SortField, SortOrder, filter_runs, query_runs
-from app.models import AgentName, HealthResponse, Run, RunListResponse, RunStatus, StatsResponse
+from app.models import AgentName, HealthResponse, Run, RunListResponse, RunStatus, StatsResponse, ToolName
 from app.stats import count_statuses, duration_stats, runs_per_day, stats_per_agent
 
 logging.basicConfig(level=logging.INFO)
@@ -37,6 +37,7 @@ app.add_middleware(CORSMiddleware, allow_origins=allowed_origins, allow_methods=
 def get_filters(
     status: Annotated[list[RunStatus] | None, Query()] = None,
     agent: Annotated[list[AgentName] | None, Query()] = None,
+    tool: Annotated[list[ToolName] | None, Query()] = None,
     started_from: date | None = None,
     started_to: date | None = None,
     q: str | None = None,
@@ -47,6 +48,7 @@ def get_filters(
     return RunFilters(
         statuses=status or [],
         agents=agent or [],
+        tools=tool or [],
         started_from=started_from,
         started_to=started_to,
         search=q,

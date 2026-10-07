@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from typing import Literal
 
-from app.models import AgentName, Number, Run, RunStatus
+from app.models import AgentName, Number, Run, RunStatus, ToolName
 
 SortField = Literal["started_at", "duration_ms", "cost_usd"]
 SortOrder = Literal["asc", "desc"]
@@ -12,6 +12,7 @@ SortOrder = Literal["asc", "desc"]
 class RunFilters:
     statuses: list[RunStatus] = field(default_factory=list)
     agents: list[AgentName] = field(default_factory=list)
+    tools: list[ToolName] = field(default_factory=list)
     started_from: date | None = None
     started_to: date | None = None
     search: str | None = None
@@ -25,6 +26,9 @@ def filter_runs(runs: list[Run], filters: RunFilters) -> list[Run]:
         if filters.statuses and run.status not in filters.statuses:
             continue
         if filters.agents and run.agent not in filters.agents:
+            continue
+        # A run matches when ANY of its steps uses one of the chosen tools. A run with no steps matches none.
+        if filters.tools and not any(step.tool in filters.tools for step in run.steps):
             continue
         started_day = run.started_at.astimezone(timezone.utc).date()
         if filters.started_from and started_day < filters.started_from:
