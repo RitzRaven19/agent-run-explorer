@@ -207,10 +207,16 @@
 @media (prefers-reduced-motion: reduce) {
   .pulse,
   .cursor,
-  .beam::before {
+  .beam::before,
+  .animate-pulse {
     animation: none;
   }
-  .tile {
+  .tile,
+  .bar,
+  .transition-transform {
     transition: none;
+  }
+  .tile:hover {
+    transform: none;
   }
 }
