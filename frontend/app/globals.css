@@ -13,8 +13,8 @@
   --color-ink: #e4e4e7;
   --color-soft: #d4d4d8;
   --color-muted: #a1a1aa;
-  --color-dim: #71717a;
-  --color-faint: #52525b;
+  --color-dim: #8e8e98;
+  --color-faint: #62626c;
   --color-accent: #c4b5fd;
   --color-warn: #e9d5ff;
   --color-succeeded: #c4b5fd;
@@ -109,6 +109,9 @@
     color: var(--color-ink);
     font-size: 14px;
     color-scheme: dark;
+  }
+  .field::placeholder {
+    color: var(--color-dim);
   }
   select.field {
     background: #0c0c10;

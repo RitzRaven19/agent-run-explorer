@@ -49,7 +49,7 @@ export default function StepWaterfall({ run, failingIndex }: { run: Pick<Run, "s
             </a>
           );
         })}
-        <div className="grid grid-cols-[150px_minmax(0,1fr)_56px] gap-3 text-[10px] text-faint tabular-nums">
+        <div className="grid grid-cols-[150px_minmax(0,1fr)_56px] gap-3 text-[10px] text-dim tabular-nums">
           <span />
           <span className="flex justify-between">
             <span>0 s</span>
