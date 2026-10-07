@@ -127,7 +127,7 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
       <p className="mb-2 text-sm text-slate-600">
         Showing {first}–{last} of {total}
         <span id="keyboard-hint" className="ml-3 hidden text-xs text-slate-500 md:inline">
-          Tip: Tab into the table, then ↑ ↓ to move between runs and Enter to open one.
+          Tip: ↑ ↓ to move between runs, Enter to open
         </span>
       </p>
       <KeyboardRows hintId="keyboard-hint">
