@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ErrorPanel from "@/components/ErrorPanel";
+import ExplainRun from "@/components/ExplainRun";
 import RunErrorBox from "@/components/RunErrorBox";
 import RunHeader from "@/components/RunHeader";
 import RunWarnings from "@/components/RunWarnings";
@@ -49,6 +50,8 @@ export default async function RunPage({ params, searchParams }: PageProps<"/runs
       <RunHeader run={run} />
       <RunWarnings warnings={run.warnings} />
       <RunErrorBox run={run} />
+      {/* key: a different run gets a fresh component, so an old explanation never shows on the new page. */}
+      <ExplainRun key={run.id} runId={run.id} />
       <StepsTimeline run={run} />
     </div>
   );

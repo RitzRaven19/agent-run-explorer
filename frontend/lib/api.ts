@@ -2,7 +2,7 @@ import { DEFAULT_FILTERS, toSearchParams, type RunFilters } from "@/lib/filters"
 import type { Run, RunListResponse, StatsResponse } from "@/lib/types";
 
 // API_URL is only set on the server; NEXT_PUBLIC_API_URL is the one a browser can see.
-function apiBaseUrl(): string {
+export function apiBaseUrl(): string {
   const url = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL;
   if (!url) {
     throw new Error("Set API_URL (and NEXT_PUBLIC_API_URL) to the backend address, e.g. http://localhost:8000");
@@ -11,7 +11,7 @@ function apiBaseUrl(): string {
 }
 
 // FastAPI sends detail as a string for our own errors and as a list of {msg} objects for validation errors.
-async function readDetail(response: Response): Promise<string> {
+export async function readDetail(response: Response): Promise<string> {
   try {
     const body: { detail?: string | { msg: string }[] } = await response.json();
     if (typeof body.detail === "string") return body.detail;
@@ -60,6 +60,11 @@ export async function fetchRun(id: string): Promise<Run | null> {
     throw new Error(`Backend error ${response.status}: ${await readDetail(response)}`);
   }
   return response.json();
+}
+
+// Called from the browser, so it resolves to NEXT_PUBLIC_API_URL there.
+export function explainUrl(runId: string): string {
+  return `${apiBaseUrl()}/api/runs/${encodeURIComponent(runId)}/explain`;
 }
 
 // Stats take the same filters as the list, but sort and paging mean nothing to them, so those are reset.
