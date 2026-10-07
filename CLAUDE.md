@@ -8,7 +8,7 @@ Guidance for AI coding assistants working in this repo. Human-facing docs: READM
 
 ## Stack
 - Backend: Python 3.12 + FastAPI in /backend; data loaded into memory at startup from DATA_PATH; pytest + TestClient.
-- Frontend: Next.js App Router + TypeScript in /frontend; Tailwind; Recharts; Vitest.
+- Frontend: Next.js App Router + TypeScript in /frontend; Tailwind; plain HTML/CSS charts; Vitest.
 - Two separate processes over HTTP; never load data inside Next.js API routes.
 - Deploy: backend on Render, frontend on Vercel, GitHub Actions keep-awake ping.
 

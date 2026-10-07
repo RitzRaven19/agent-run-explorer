@@ -24,9 +24,11 @@ Mapped to the brief's "Must build":
   - **Quick investigations:** buttons above the filters (Failures, Slowest, Most expensive, Running now). Each one only rewrites the URL, replacing the current filters; the active one is highlighted and clicking it again returns to `/runs`.
   - **Tool filter:** chips for the five tools, combined with every other filter.
   - **Request indicator:** a small line under the list, such as `List request: 84 ms · 3 requests this session`. It shows the time of the list request and counts the list requests this browser tab has made, so you can see that a filter change costs one request and typing in the search box costs one per pause, not one per keystroke. A filter change makes exactly one backend call, the list request. (The counts on the status and agent chips and the header pill come from the unfiltered stats, which the Next.js server keeps for a few minutes.)
+  - **Phones:** the filters collapse behind a "Filters (N active)" button, and the table shows a "scroll →" hint while it has more to the right.
   - **Keyboard:** ↑ ↓ move between rows (starting at the first or last row when nothing is focused) and Enter opens the run, keeping the list's filters for "Back to runs". Arrow keys are never taken from the search box, selects or buttons.
 - **`/runs/[id]`**: metadata, the error (if any), steps in order with duration and tokens, step input/output readable in place, warnings, and a streaming "Explain this run" button. `/runs/run_0042#step-3` deep-links to a step: it is highlighted, scrolled into view, and its input and output open fully expanded even when long.
-- **`/dashboard`**: stat tiles, one card per agent (runs, success rate, priced cost with its unpriced count, and a link to that agent's runs) and three charts (runs per day, cost per agent, runs by status per agent). Clicking a bar opens the matching filtered `/runs`.
+- **`/dashboard`**: stat tiles, one card per agent (runs, success rate, priced cost with its unpriced count, and a link to that agent's runs) and three charts (runs per day with a y-axis, cost per agent, runs by status per agent). Clicking a bar opens the matching filtered `/runs`. A collapsible box lists the data anomalies.
+- **Branding:** a hex agent mark as the app icon and in the header.
 - **Tests**: 75 backend tests (including filters composing and a statistic checked against a hand-computed value) and 112 frontend tests (Vitest).
 
 Data problems in the dataset (a duplicate id, a negative duration, a run with no steps, unpriced runs) are detected at load time, reported in `data_warnings`, and shown in the UI. See [DECISIONS.md](DECISIONS.md).
@@ -68,7 +70,7 @@ flowchart LR
 ```
 
 - **Backend**: Python 3.12, FastAPI, Pydantic. The JSONL file is read into memory once at startup.
-- **Frontend**: Next.js (App Router), React, TypeScript, Tailwind. There is no chart library: the dashboard's charts are plain HTML and CSS bars.
+- **Frontend**: Next.js (App Router), React, TypeScript, Tailwind. There is no chart library: the dashboard's charts are plain HTML and CSS bars. Fonts come from the `geist` npm package, so the build needs no access to Google Fonts.
 - Two separate processes over HTTP. The Next.js server fetches data from the API; the browser calls the API directly only for the streaming explain, so the text is not buffered by an extra hop.
 
 ## Run it locally

@@ -11,11 +11,12 @@ This is a take-home demo over a fixed, read-only dataset. This page says what pr
 
 **Input validation**
 - Query parameters are validated by FastAPI and Pydantic. `status`, `agent` and `tool` are `Literal` types, so an unknown value (for example `?tool=hammer`) gets a 422. `page` and `page_size` have bounds (`page_size` at most 100), dates must be real dates, and a reversed date range is a 422.
+- The search text `q` is limited to 200 characters (longer gets a 422). Timestamps in the data file must carry a timezone; a line without one is skipped and reported. The stats date range is clipped to the dataset's own days, so a request for year 1 to year 9999 stays cheap.
 - The frontend also drops unknown values when it parses the URL (`parseFilters`), so a hand-edited URL cannot send the backend something odd.
 - Search is a plain substring match on the prompt, not a regular expression, so a search term cannot cause pathological matching.
 
 **Browser-side**
-- **CORS:** the backend allows `http://localhost:3000` plus the exact origins in `CORS_ORIGINS`. There is no wildcard. Only the browser's Explain call needs it; server-side fetches from Next.js are not subject to CORS.
+- **CORS:** the backend allows `http://localhost:3000` plus the exact origins in `CORS_ORIGINS`. There is no wildcard, and only the GET, POST and OPTIONS methods and the Content-Type header are allowed. Only the browser's Explain call needs it; server-side fetches from Next.js are not subject to CORS.
 - **Open redirect:** the "Back to runs" link uses `?from=` from the URL. It is parsed and rebuilt (`backToRunsHref`), so only known filters survive and the link always starts with `/runs`. A value like `//evil.com` produces `/runs`. There is a test for this.
 - **XSS:** prompts, step inputs/outputs and error messages are untrusted text. React escapes everything it renders, and the code uses no `dangerouslySetInnerHTML` or `innerHTML`. The streamed explanation is rendered as text, never as HTML.
 

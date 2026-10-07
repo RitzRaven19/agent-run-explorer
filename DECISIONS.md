@@ -50,7 +50,7 @@ A Playwright end-to-end test for streaming Explain and the keyboard navigation, 
 - **URL is the single source of truth** for filters, search, sort and page, so a view can be shared. The page is a server component that reads the URL; no separate client state.
 - **`router.replace`, not `push`**, for filter changes, so each keystroke or checkbox doesn't add a Back-button entry. Search is debounced.
 - **Suspense `key`** built from the filters, so the loading skeleton shows again when the filters change.
-- **Server vs client components:** data is fetched in server components; only things that need the browser (filter bar, Explain, charts) are client components that receive plain props.
+- **Server vs client components:** data is fetched in server components; only things that need the browser are client components that receive plain props: the filter bar, quick investigations, Explain, step expand/collapse, keyboard rows, the request indicator, the table scroll hint, scroll-to-step, the nav links and the error panel. The charts and agent cards are server components.
 - **Explain is called from the browser**, straight to the backend. Going through a Next.js server hop could buffer the text and defeat streaming. This is why CORS is needed.
 - **`?from=` back link** carries the list's filters to the detail page. It is validated by parsing it and rebuilding the URL, so a value like `//evil.com` can only ever produce `/runs`.
 - **Tool filter:** a run matches when *any* of its steps uses one of the chosen tools, and a run with no recorded steps (`run_0089`) matches none. It goes through the same shared filter as everything else, so `/api/stats` respects it too.
