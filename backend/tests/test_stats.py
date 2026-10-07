@@ -1,4 +1,5 @@
 import json
+import time
 
 import pytest
 
@@ -79,17 +80,52 @@ def test_runs_per_day_fills_the_gap_day_with_zero(fixture_client):
     ]
 
 
-def test_runs_per_day_uses_the_requested_range(fixture_client):
+def test_runs_per_day_clips_the_requested_range_to_the_dataset(fixture_client):
     runs_per_day = get_stats(fixture_client, started_from="2026-07-31", started_to="2026-08-04")["runs_per_day"]
 
-    # Requested range 31 Jul to 4 Aug is 5 days; only 1 Aug and 3 Aug have runs (2 and 3).
-    assert [day["count"] for day in runs_per_day] == [0, 2, 0, 3, 0]
+    # The dataset spans 1 Aug to 3 Aug, so the requested 31 Jul and 4 Aug are cut off, not padded with zeros.
+    assert [day["count"] for day in runs_per_day] == [2, 0, 3]
 
 
-def test_no_runs_and_no_dates_gives_no_days_and_null_stats(fixture_client):
+def test_runs_per_day_inside_the_dataset_uses_the_requested_days(fixture_client):
+    runs_per_day = get_stats(fixture_client, started_from="2026-08-02", started_to="2026-08-03")["runs_per_day"]
+
+    assert runs_per_day == [{"date": "2026-08-02", "count": 0}, {"date": "2026-08-03", "count": 3}]
+
+
+def test_runs_per_day_outside_the_dataset_is_empty(fixture_client):
+    assert get_stats(fixture_client, started_from="2026-09-01", started_to="2026-09-30")["runs_per_day"] == []
+
+
+def test_huge_date_range_is_fast_and_limited_to_the_dataset_days(real_client):
+    started = time.perf_counter()
+    body = get_stats(real_client, started_from="0001-01-01", started_to="9999-12-31")
+    elapsed = time.perf_counter() - started
+
+    assert elapsed < 2
+    runs_per_day = body["runs_per_day"]
+    # The data runs from 20 Jul to 31 Aug 2026: 12 days in July + 31 in August = 43.
+    assert len(runs_per_day) == 43
+    assert runs_per_day[0]["date"] == "2026-07-20"
+    assert runs_per_day[-1]["date"] == "2026-08-31"
+    assert sum(day["count"] for day in runs_per_day) == 200
+
+
+def test_filtered_view_keeps_its_empty_days(real_client):
+    params = {"agent": "kpi-analyst", "started_from": "2026-08-01", "started_to": "2026-08-10"}
+    runs_per_day = get_stats(real_client, **params)["runs_per_day"]
+
+    assert [day["date"] for day in runs_per_day] == [f"2026-08-{day:02d}" for day in range(1, 11)]
+    # kpi-analyst has no run on several of these days, and those days are still listed, with 0.
+    assert [day["count"] for day in runs_per_day] == [0, 0, 1, 0, 2, 0, 2, 0, 0, 1]
+    assert sum(day["count"] for day in runs_per_day) == real_client.get("/api/runs", params=params).json()["total"]
+
+
+def test_no_matching_runs_gives_zero_days_and_null_stats(fixture_client):
     body = get_stats(fixture_client, q="no prompt contains this text")
 
-    assert body["runs_per_day"] == []
+    # No run matches, but the dataset's three days are still shown, all zero.
+    assert [day["count"] for day in body["runs_per_day"]] == [0, 0, 0]
     assert body["overall"]["total"] == 0
     # 0 finished runs means a success rate of 0 / 0, which is reported as null instead of dividing by zero
     assert body["overall"]["success_rate"] is None

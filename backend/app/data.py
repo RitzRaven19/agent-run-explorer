@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from datetime import date
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -15,14 +16,19 @@ DEFAULT_DATA_PATH = Path(__file__).resolve().parents[2] / "data" / "runs.jsonl"
 
 runs: list[Run] = []
 data_warnings: list[str] = []
+# The first and last UTC day of all loaded runs, or None when nothing loaded. Stats zero-fill within this range.
+dataset_days: tuple[date, date] | None = None
 
 
 def load_data() -> None:
-    """Fill the module-level `runs` and `data_warnings` from DATA_PATH. Never raises on bad data."""
+    """Fill the module-level `runs`, `dataset_days` and `data_warnings` from DATA_PATH. Never raises on bad data."""
+    global dataset_days
     path = Path(os.environ.get("DATA_PATH") or DEFAULT_DATA_PATH)
     loaded, warnings = load_runs(path)
     runs.clear()
     runs.extend(loaded)
+    days = [run.started_day for run in loaded]
+    dataset_days = (min(days), max(days)) if days else None
     data_warnings.clear()
     data_warnings.extend(warnings)
     for warning in warnings:

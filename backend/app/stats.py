@@ -1,5 +1,5 @@
 import statistics
-from datetime import date, timedelta, timezone
+from datetime import date, timedelta
 
 from app.models import AgentStats, DayCount, DurationStats, Number, Run, StatusCounts
 
@@ -73,25 +73,31 @@ def duration_stats(runs: list[Run]) -> DurationStats:
     )
 
 
-def runs_per_day(runs: list[Run], started_from: date | None, started_to: date | None) -> list[DayCount]:
+def runs_per_day(
+    runs: list[Run],
+    started_from: date | None,
+    started_to: date | None,
+    dataset_days: tuple[date, date] | None,
+) -> list[DayCount]:
     """Count runs for every UTC day in the range, including days with no runs.
 
-    The range is the requested dates, falling back to the earliest and latest run.
-    With no runs and no dates there is no range, so the list is empty.
+    The range is the requested dates clipped to the dataset's first and last day (all runs, not just the
+    filtered ones), so a filtered view still shows its empty days. Clipping also bounds the loop: a request for
+    year 1 to year 9999 can never produce more days than the dataset spans.
     """
+    if dataset_days is None:
+        return []
+    dataset_first, dataset_last = dataset_days
+    first = max(started_from or dataset_first, dataset_first)
+    last = min(started_to or dataset_last, dataset_last)
+
     counts: dict[date, int] = {}
     for run in runs:
-        day = run.started_at.astimezone(timezone.utc).date()
-        counts[day] = counts.get(day, 0) + 1
+        counts[run.started_day] = counts.get(run.started_day, 0) + 1
 
-    first = started_from or (min(counts) if counts else None)
-    last = started_to or (max(counts) if counts else None)
-    if first is None or last is None:
-        return []
-
+    # Counting offsets from `first` never builds a day past `last`, so there is no date overflow.
     days: list[DayCount] = []
-    day = first
-    while day <= last:
+    for offset in range((last - first).days + 1):
+        day = first + timedelta(days=offset)
         days.append(DayCount(date=day.isoformat(), count=counts.get(day, 0)))
-        day += timedelta(days=1)
     return days

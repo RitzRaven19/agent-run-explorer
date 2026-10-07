@@ -104,6 +104,6 @@ def get_stats(filters: Annotated[RunFilters, Depends(get_filters)]) -> StatsResp
         overall=count_statuses(runs),
         per_agent=stats_per_agent(runs),
         duration=duration_stats(runs),
-        runs_per_day=runs_per_day(runs, filters.started_from, filters.started_to),
+        runs_per_day=runs_per_day(runs, filters.started_from, filters.started_to, data.dataset_days),
         data_warnings=data.data_warnings,
     )

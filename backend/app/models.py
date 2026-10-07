@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime, timezone
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -58,6 +58,11 @@ class RunBase(BaseModel):
     tenant_id: str
     # Filled in by the loader, never read from the file.
     warnings: list[str] = Field(default_factory=list)
+
+    @property
+    def started_day(self) -> date:
+        """The UTC calendar day the run started on, the day the dashboard counts it under."""
+        return self.started_at.astimezone(timezone.utc).date()
 
     @property
     def valid_duration_ms(self) -> Number | None:
