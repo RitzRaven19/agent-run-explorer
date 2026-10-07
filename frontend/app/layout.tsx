@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
 import "./globals.css";
+import AppMark from "@/components/AppMark";
 import HealthPill, { HealthPillPlaceholder } from "@/components/HealthPill";
 import NavLinks, { NavLinksFallback } from "@/components/NavLinks";
 
@@ -26,10 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <header className="relative border-b border-white/[0.07] bg-page/60 backdrop-blur-xl">
             <nav aria-label="Main" className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-7 px-6 py-3.5">
               <Link href="/runs" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.01em]">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" strokeWidth="1.6" aria-hidden="true">
-                  <path d="M4 17c3-8 6-8 8 0s5 8 8 0" />
-                  <circle cx="12" cy="12" r="10" strokeOpacity=".35" />
-                </svg>
+                <AppMark />
                 Agent Run Explorer
               </Link>
               <Suspense fallback={<NavLinksFallback />}>
