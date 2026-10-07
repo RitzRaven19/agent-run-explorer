@@ -79,10 +79,10 @@ def list_runs(
 
 @app.get("/api/runs/{run_id}", response_model=Run)
 def get_run(run_id: str) -> Run:
-    for run in data.runs:
-        if run.id == run_id:
-            return run
-    raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
+    run = data.runs_by_id.get(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
+    return run
 
 
 @app.post("/api/runs/{run_id}/explain")

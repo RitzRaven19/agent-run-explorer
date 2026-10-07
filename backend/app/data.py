@@ -15,18 +15,22 @@ logger = logging.getLogger(__name__)
 DEFAULT_DATA_PATH = Path(__file__).resolve().parents[2] / "data" / "runs.jsonl"
 
 runs: list[Run] = []
+# The same runs keyed by id, so fetching one run does not scan the whole list. Ids are unique after deduplication.
+runs_by_id: dict[str, Run] = {}
 data_warnings: list[str] = []
 # The first and last UTC day of all loaded runs, or None when nothing loaded. Stats zero-fill within this range.
 dataset_days: tuple[date, date] | None = None
 
 
 def load_data() -> None:
-    """Fill the module-level `runs`, `dataset_days` and `data_warnings` from DATA_PATH. Never raises on bad data."""
+    """Fill the module-level `runs`, `runs_by_id`, `dataset_days` and `data_warnings` from DATA_PATH. Never raises on bad data."""
     global dataset_days
     path = Path(os.environ.get("DATA_PATH") or DEFAULT_DATA_PATH)
     loaded, warnings = load_runs(path)
     runs.clear()
     runs.extend(loaded)
+    runs_by_id.clear()
+    runs_by_id.update({run.id: run for run in loaded})
     days = [run.started_day for run in loaded]
     dataset_days = (min(days), max(days)) if days else None
     data_warnings.clear()
