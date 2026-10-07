@@ -10,8 +10,8 @@ export default function RunsPerDayChart({ days }: { days: DayCount[] }) {
   const ticks = dayAxisTicks(days);
 
   return (
-    <div className="overflow-x-auto">
-      <div className="flex min-w-[760px]">
+    <div className="scroll-px-2 overflow-x-auto">
+      <div className="flex min-w-[760px] pr-1.5">
         <div aria-hidden="true" className="relative h-[200px] w-8 shrink-0 text-xs text-dim">
           {ticks.map((tick) => (
             <span
