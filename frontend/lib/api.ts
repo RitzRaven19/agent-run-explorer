@@ -32,6 +32,12 @@ async function request(path: string): Promise<Response> {
   }
 }
 
+// Server components catch backend errors and show this text, because Next.js hides the message of
+// an error that reaches error.tsx in production builds.
+export function describeError(error: unknown): string {
+  return error instanceof Error ? error.message : "Something unexpected went wrong";
+}
+
 async function getJson<T>(path: string): Promise<T> {
   const response = await request(path);
   if (!response.ok) {

@@ -1,6 +1,7 @@
 import Link from "next/link";
+import ErrorPanel from "@/components/ErrorPanel";
 import StatusBadge from "@/components/StatusBadge";
-import { fetchRuns } from "@/lib/api";
+import { describeError, fetchRuns } from "@/lib/api";
 import { toSearchParams, type RunFilters } from "@/lib/filters";
 import {
   formatCost,
@@ -9,7 +10,7 @@ import {
   hasInvalidDuration,
   promptPreview,
 } from "@/lib/format";
-import type { RunSummary } from "@/lib/types";
+import type { RunListResponse, RunSummary } from "@/lib/types";
 
 const LINK_STYLE = "rounded border border-slate-300 bg-white px-3 py-1 text-sm hover:bg-slate-100";
 const DISABLED_STYLE = "rounded border border-slate-200 px-3 py-1 text-sm text-slate-400";
@@ -105,7 +106,13 @@ function Pagination({ filters, lastPage }: { filters: RunFilters; lastPage: numb
 }
 
 export default async function RunsResults({ filters }: { filters: RunFilters }) {
-  const { items, total, page, page_size } = await fetchRuns(filters);
+  let list: RunListResponse;
+  try {
+    list = await fetchRuns(filters);
+  } catch (error) {
+    return <ErrorPanel message={describeError(error)} />;
+  }
+  const { items, total, page, page_size } = list;
 
   if (total === 0) {
     return (
