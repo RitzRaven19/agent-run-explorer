@@ -34,9 +34,10 @@ def load_runs(path: Path) -> tuple[list[Run], list[str]]:
     """Read a JSONL file and return (clean-enough runs, warnings about everything odd)."""
     warnings: list[str] = []
     parsed = parse_lines(path, warnings)
-    unique_runs = resolve_duplicates(parsed, warnings)
+    unique_runs = resolve_duplicates(parsed)
     for run in unique_runs:
-        run.warnings = find_run_warnings(run)
+        # extend, not assign: a kept duplicate already carries the note about the copy that was dropped.
+        run.warnings.extend(find_run_warnings(run))
         warnings.extend(f"{run.id}: {warning}" for warning in run.warnings)
     return unique_runs, warnings
 
@@ -79,8 +80,11 @@ def find_inconsistencies(run: Run) -> list[str]:
     return problems
 
 
-def resolve_duplicates(parsed: list[tuple[int, Run]], warnings: list[str]) -> list[Run]:
-    """Keep one record per id: the one with the fewest contradictions (the first on a tie)."""
+def resolve_duplicates(parsed: list[tuple[int, Run]]) -> list[Run]:
+    """Keep one record per id: the one with the fewest contradictions (the first on a tie).
+
+    The kept run gets a warning about each dropped copy, so its own page can explain the choice.
+    """
     by_id: dict[str, list[tuple[int, Run]]] = {}
     for line_number, run in parsed:
         by_id.setdefault(run.id, []).append((line_number, run))
@@ -94,8 +98,8 @@ def resolve_duplicates(parsed: list[tuple[int, Run]], warnings: list[str]) -> li
             if line_number == kept_line:
                 continue
             reasons = find_inconsistencies(dropped) or ["it has no contradictions, but so does the kept copy"]
-            warnings.append(
-                f"{run_id}: duplicate id. Kept line {kept_line} (status '{kept.status}'), "
+            kept.warnings.append(
+                f"duplicate id. Kept line {kept_line} (status '{kept.status}'), "
                 f"dropped line {line_number} (status '{dropped.status}') because "
                 + "; ".join(reasons)
             )

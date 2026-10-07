@@ -35,3 +35,7 @@ def test_health_reports_run_count_and_data_warnings(real_client):
     assert body["status"] == "ok"
     assert body["run_count"] == 200
     assert len(body["data_warnings"]) > 0
+    # The duplicate is reported on run_0031 itself and listed globally exactly once.
+    duplicate_warnings = [warning for warning in body["data_warnings"] if "duplicate id" in warning]
+    assert len(duplicate_warnings) == 1
+    assert duplicate_warnings[0].startswith("run_0031: duplicate id. Kept line 187")

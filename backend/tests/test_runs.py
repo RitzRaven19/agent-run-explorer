@@ -159,6 +159,7 @@ def test_broken_records_carry_warnings(client):
     assert any("unpriced" in warning for warning in by_id["run_0008"]["warnings"])
     assert any("invalid duration" in warning for warning in by_id["run_0064"]["warnings"])
     assert any("step 3" in warning for warning in by_id["run_0089"]["warnings"])
+    assert any("duplicate id" in warning for warning in by_id["run_0031"]["warnings"])
     assert by_id["run_0089"]["step_count"] == 0
     assert by_id["run_0001"]["warnings"] == []
 
