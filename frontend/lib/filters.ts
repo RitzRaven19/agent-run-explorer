@@ -123,6 +123,15 @@ export function runsListHref(filters: RunFilters): string {
   return query ? `/runs?${query}` : "/runs";
 }
 
+// The backend compares whole days, so from = to = the same day lists exactly that day's runs.
+export function runsForDayHref(isoDate: string): string {
+  return runsListHref({ ...DEFAULT_FILTERS, started_from: isoDate, started_to: isoDate });
+}
+
+export function runsForAgentHref(agent: AgentName): string {
+  return runsListHref({ ...DEFAULT_FILTERS, agent: [agent] });
+}
+
 // The list's query string travels to the run page as ?from=, so "Back to runs" can restore the same view.
 export function runDetailHref(runId: string, filters: RunFilters): string {
   const path = `/runs/${encodeURIComponent(runId)}`;
