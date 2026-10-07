@@ -33,6 +33,23 @@ export function formatCost(costUsd: number): string {
   return `$${costUsd.toFixed(6)}`;
 }
 
+// A total over priced runs only. The unpriced count is spelled out so a missing price never looks like $0.
+export function formatPricedTotal(totalUsd: number, unpricedCount: number): string {
+  const total = formatCost(totalUsd);
+  return unpricedCount > 0 ? `${total} (${unpricedCount} unpriced)` : total;
+}
+
+// null means no run has finished, so there is no rate to show (not 0%).
+export function formatPercent(rate: number | null): string {
+  return rate === null ? "—" : `${(rate * 100).toFixed(2)}%`;
+}
+
+// "2026-08-12" -> "12 Aug". The string is read as a UTC day, the same way the backend counts days.
+export function formatDayLabel(isoDate: string): string {
+  const date = new Date(`${isoDate}T00:00:00Z`);
+  return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
+}
+
 // One line: newlines and runs of spaces collapse to a single space before cutting to length.
 export function promptPreview(prompt: string): string {
   const oneLine = prompt.replace(/\s+/g, " ").trim();
