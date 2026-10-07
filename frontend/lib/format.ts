@@ -1,4 +1,4 @@
-import type { RunSummary } from "@/lib/types";
+import type { RunBase } from "@/lib/types";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -34,6 +34,6 @@ export function promptPreview(prompt: string): string {
 }
 
 // The backend keeps a negative duration as-is (run_0064) and warns about it, so the UI has to spot it.
-export function hasInvalidDuration(run: RunSummary): boolean {
+export function hasInvalidDuration(run: Pick<RunBase, "duration_ms">): boolean {
   return run.duration_ms !== null && run.duration_ms < 0;
 }

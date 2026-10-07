@@ -1,15 +1,10 @@
 import Link from "next/link";
 import ErrorPanel from "@/components/ErrorPanel";
+import { CostValue, DurationValue, WarningMark } from "@/components/RunValues";
 import StatusBadge from "@/components/StatusBadge";
 import { describeError, fetchRuns } from "@/lib/api";
 import { toSearchParams, type RunFilters } from "@/lib/filters";
-import {
-  formatCost,
-  formatDateTimeUtc,
-  formatDurationSeconds,
-  hasInvalidDuration,
-  promptPreview,
-} from "@/lib/format";
+import { formatDateTimeUtc, promptPreview } from "@/lib/format";
 import type { RunListResponse, RunSummary } from "@/lib/types";
 
 const LINK_STYLE = "rounded border border-slate-300 bg-white px-3 py-1 text-sm hover:bg-slate-100";
@@ -18,34 +13,6 @@ const DISABLED_STYLE = "rounded border border-slate-200 px-3 py-1 text-sm text-s
 function runsHref(filters: RunFilters, page: number): string {
   const query = toSearchParams({ ...filters, page }).toString();
   return query ? `/runs?${query}` : "/runs";
-}
-
-function WarningMark({ text }: { text: string }) {
-  return (
-    <span title={text} aria-label={`Warning: ${text}`} className="cursor-help text-amber-600">
-      ⚠
-    </span>
-  );
-}
-
-function DurationCell({ run }: { run: RunSummary }) {
-  if (run.status === "running") return <span className="text-blue-700">running</span>;
-  if (hasInvalidDuration(run)) {
-    return (
-      <span>
-        — <WarningMark text="Invalid duration: the run ended before it started" />
-      </span>
-    );
-  }
-  if (run.duration_ms === null) return <span>—</span>;
-  return <span>{formatDurationSeconds(run.duration_ms)}</span>;
-}
-
-function CostCell({ costUsd }: { costUsd: number | null }) {
-  if (costUsd === null) {
-    return <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">unpriced</span>;
-  }
-  return <span>{formatCost(costUsd)}</span>;
 }
 
 function RunRow({ run }: { run: RunSummary }) {
@@ -63,10 +30,10 @@ function RunRow({ run }: { run: RunSummary }) {
       </td>
       <td className="whitespace-nowrap px-3 py-2">{formatDateTimeUtc(run.started_at)}</td>
       <td className="whitespace-nowrap px-3 py-2 text-right">
-        <DurationCell run={run} />
+        <DurationValue run={run} />
       </td>
       <td className="whitespace-nowrap px-3 py-2 text-right font-mono">
-        <CostCell costUsd={run.cost_usd} />
+        <CostValue costUsd={run.cost_usd} />
       </td>
       <td className="px-3 py-2 text-right">{run.step_count}</td>
       <td className="max-w-xs truncate px-3 py-2 text-slate-600" title={run.prompt}>
