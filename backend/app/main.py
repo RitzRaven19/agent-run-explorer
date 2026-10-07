@@ -31,7 +31,13 @@ app = FastAPI(title="Agent Run Explorer API", lifespan=lifespan)
 allowed_origins = ["http://localhost:3000"] + [
     origin.strip() for origin in os.environ.get("CORS_ORIGINS", "").split(",") if origin.strip()
 ]
-app.add_middleware(CORSMiddleware, allow_origins=allowed_origins, allow_methods=["*"], allow_headers=["*"])
+# Only what the browser actually sends: GET for data, POST for Explain, and the OPTIONS preflight before that POST.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allowed_origins,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
+)
 
 
 def get_filters(
