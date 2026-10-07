@@ -9,7 +9,7 @@ import type { Run } from "@/lib/types";
 function Field({ label, children, title, big = false }: { label: string; children: ReactNode; title?: string; big?: boolean }) {
   return (
     <div className="flex flex-col gap-1">
-      <dt className="text-[11px] tracking-[0.1em] text-dim uppercase">{label}</dt>
+      <dt className="text-xs tracking-[0.1em] text-dim uppercase">{label}</dt>
       <dd title={title} className={big ? "text-[22px] tabular-nums" : "text-sm"}>
         {children}
       </dd>
@@ -60,7 +60,7 @@ export default function RunHeader({ run }: { run: Run }) {
       <StepWaterfall run={run} failingIndex={run.error?.step_index ?? null} />
 
       <div className="flex flex-col gap-2">
-        <h2 className="text-[11px] tracking-[0.1em] text-dim uppercase">Prompt</h2>
+        <h2 className="text-xs tracking-[0.1em] text-dim uppercase">Prompt</h2>
         {/* pre-wrap keeps the prompt's own line breaks and spacing but still wraps long lines. */}
         <p className="rounded-xl border border-white/[0.06] bg-black/35 px-4 py-3.5 text-[15px] break-words whitespace-pre-wrap">
           {run.prompt}

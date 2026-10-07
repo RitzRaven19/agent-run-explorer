@@ -33,7 +33,7 @@ function AgentCard({ agent }: { agent: AgentStats }) {
       <span className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-soft tabular-nums">{agentCostText(agent)}</span>
         {agent.unpriced_count > 0 && (
-          <span className="rounded-full border border-warn/25 bg-warn/12 px-2 py-[3px] text-[11px] text-warn">
+          <span className="rounded-full border border-warn/25 bg-warn/12 px-2 py-[3px] text-xs text-warn">
             {agent.unpriced_count} unpriced
           </span>
         )}

@@ -31,7 +31,7 @@ export default function ScrollableTable({ children }: { children: ReactNode }) {
       </div>
       {hasMoreToRight && (
         <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-page/90 to-transparent">
-          <span className="absolute top-2.5 right-2 rounded-full border border-white/[0.14] bg-page/80 px-2 py-0.5 text-[11px] whitespace-nowrap text-accent">
+          <span className="absolute top-2.5 right-2 rounded-full border border-white/[0.14] bg-page/80 px-2 py-0.5 text-xs whitespace-nowrap text-accent">
             scroll →
           </span>
         </div>

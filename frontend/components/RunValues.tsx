@@ -27,7 +27,7 @@ export function DurationValue({ run }: { run: Pick<RunBase, "status" | "duration
 export function CostValue({ costUsd }: { costUsd: number | null }) {
   if (costUsd === null) {
     return (
-      <span className="rounded-full border border-warn/25 bg-warn/12 px-2 py-[3px] text-[11px] text-warn">
+      <span className="rounded-full border border-warn/25 bg-warn/12 px-2 py-[3px] text-xs text-warn">
         unpriced
       </span>
     );

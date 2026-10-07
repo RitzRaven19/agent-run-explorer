@@ -5,7 +5,7 @@ import StepValue from "@/components/StepValue";
 import { formatDurationSeconds, formatStepValue, formatTimeUtc, stepAnchorId } from "@/lib/format";
 import type { Run, RunStatus, Step } from "@/lib/types";
 
-const SECTION_LABEL = "text-[11px] tracking-[0.1em] text-dim uppercase";
+const SECTION_LABEL = "text-xs tracking-[0.1em] text-dim uppercase";
 
 // The glow round each step's dot on the rail, in the step's status colour.
 const DOT_GLOW: Record<RunStatus, string> = {
@@ -39,10 +39,10 @@ function StepCard({ step, isFailing }: { step: Step; isFailing: boolean }) {
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="text-xs text-dim tabular-nums">Step {step.index}</span>
           <h3 className="text-[15px] font-semibold">{step.name}</h3>
-          <span className="rounded-md bg-white/[0.07] px-2 py-0.5 text-[11px] text-soft">{step.tool}</span>
+          <span className="rounded-md bg-white/[0.07] px-2 py-0.5 text-xs text-soft">{step.tool}</span>
           <StatusBadge status={step.status} size="sm" />
           {isFailing && (
-            <span className="rounded-full bg-failed/25 px-[9px] py-0.5 text-[11px] text-[#fce7f3]">Failed here</span>
+            <span className="rounded-full bg-failed/25 px-[9px] py-0.5 text-xs text-[#fce7f3]">Failed here</span>
           )}
           {isRunning && (
             <span className="flex items-center gap-1 text-xs text-running">

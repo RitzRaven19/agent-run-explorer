@@ -12,12 +12,12 @@ export default function RunsPerDayChart({ days }: { days: DayCount[] }) {
   return (
     <div className="overflow-x-auto">
       <div className="flex min-w-[760px]">
-        <div aria-hidden="true" className="relative h-[200px] w-7 shrink-0 text-[11px] text-dim">
+        <div aria-hidden="true" className="relative h-[200px] w-8 shrink-0 text-xs text-dim">
           {ticks.map((tick) => (
             <span
               key={tick.value}
               className="absolute right-2 leading-none tabular-nums"
-              style={{ bottom: `${tick.heightPx - 5}px` }}
+              style={{ bottom: `${tick.heightPx - 6}px` }}
             >
               {tick.value}
             </span>
@@ -55,7 +55,7 @@ export default function RunsPerDayChart({ days }: { days: DayCount[] }) {
               ))}
             </div>
           </div>
-          <div className="flex justify-between pt-2 text-[11px] text-dim">
+          <div className="flex justify-between pt-2 text-xs text-dim">
             {labels.map((label) => (
               <span key={label}>{label}</span>
             ))}

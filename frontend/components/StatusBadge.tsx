@@ -10,7 +10,7 @@ const STATUS_STYLES: Record<RunStatus, { badge: string; dot: string }> = {
 
 // sm: inside a step card (no dot). md: in the runs table. lg: next to the run id on the detail page.
 const SIZES = {
-  sm: "px-[9px] py-0.5 text-[11px]",
+  sm: "px-[9px] py-0.5 text-xs",
   md: "gap-1.5 px-2.5 py-[3px] text-xs",
   lg: "gap-1.5 px-3 py-1 text-xs",
 };

@@ -22,7 +22,7 @@ export default function OutcomeDonut({ counts }: { counts: StatusCounts }) {
       >
         <span className="flex h-[90px] w-[90px] flex-col items-center justify-center gap-0.5 rounded-full bg-[#0d0718]">
           <span className="text-xl font-semibold tabular-nums text-white">{rate}</span>
-          <span className="text-[10px] tracking-[0.08em] text-muted uppercase">success</span>
+          <span className="text-xs tracking-[0.08em] text-muted uppercase">success</span>
         </span>
       </span>
       <span className="flex flex-col gap-1.5 text-xs text-muted">

@@ -23,7 +23,7 @@ function toggled<T extends string>(selected: T[], value: T, order: readonly T[])
 
 function ChipCount({ count }: { count: number | undefined }) {
   if (count === undefined) return null;
-  return <span className="text-[11px] text-dim tabular-nums">{count}</span>;
+  return <span className="text-xs text-dim tabular-nums">{count}</span>;
 }
 
 // counts is null when the backend could not be asked; the chips then show no numbers.

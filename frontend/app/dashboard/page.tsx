@@ -106,7 +106,7 @@ function StatTiles({ stats }: { stats: StatsResponse }) {
           <Link
             href="/runs"
             title="Runs with no price are not counted as $0"
-            className="self-start rounded-full border border-warn/25 bg-warn/12 px-[9px] py-[3px] text-[11px] text-warn"
+            className="self-start rounded-full border border-warn/25 bg-warn/12 px-[9px] py-[3px] text-xs text-warn"
           >
             {unpricedCount} unpriced {unpricedCount === 1 ? "run" : "runs"} →
           </Link>
@@ -153,7 +153,7 @@ function DataWarnings({ warnings }: { warnings: string[] }) {
               {runId && (
                 <Link
                   href={runDetailHref(runId, DEFAULT_FILTERS)}
-                  className="shrink-0 rounded-full bg-accent/15 px-2.5 py-0.5 font-mono text-[11px] text-accent hover:bg-accent/25"
+                  className="shrink-0 rounded-full bg-accent/15 px-2.5 py-0.5 font-mono text-xs text-accent hover:bg-accent/25"
                 >
                   {runId}
                 </Link>

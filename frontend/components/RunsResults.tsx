@@ -170,7 +170,7 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
           <ScrollableTable>
             <table className="w-full min-w-[980px] border-collapse text-left text-sm">
               <thead>
-                <tr className="bg-white/[0.025] text-[11px] tracking-[0.1em] text-muted uppercase">
+                <tr className="bg-white/[0.025] text-xs tracking-[0.1em] text-muted uppercase">
                   <th className="px-[18px] py-3.5 font-medium">Run</th>
                   <th className="px-3 py-3.5 font-medium">Agent</th>
                   <th className="px-3 py-3.5 font-medium">Status</th>
