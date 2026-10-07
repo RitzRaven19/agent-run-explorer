@@ -66,3 +66,28 @@ def test_end_time_and_step_time_without_a_timezone_are_also_skipped(tmp_path):
     assert runs == []
     assert "ended_at" in warnings[0]
     assert "steps.0.started_at" in warnings[1]
+
+
+def test_negative_error_step_index_is_flagged_and_the_run_is_kept(tmp_path):
+    error = {"type": "Timeout", "message": "step timed out", "step_index": -1}
+    path = write_runs(tmp_path / "runs.jsonl", [make_run("run_a", status="failed", error=error)])
+
+    runs, warnings = load_runs(path)
+
+    assert [run.id for run in runs] == ["run_a"]
+    assert any("negative" in warning for warning in runs[0].warnings)
+    assert any(warning.startswith("run_a:") and "negative" in warning for warning in warnings)
+
+
+def test_valid_error_step_index_gets_no_warning(tmp_path):
+    step = {
+        "index": 0, "name": "step", "tool": "llm", "status": "failed", "started_at": "2026-08-01T10:00:00Z",
+        "duration_ms": 5, "input": "in", "output": None, "tokens": {"input": 1, "output": 1},
+    }
+    error = {"type": "Timeout", "message": "step timed out", "step_index": 0}
+    path = write_runs(tmp_path / "runs.jsonl", [make_run("run_a", status="failed", error=error, steps=[step])])
+
+    runs, warnings = load_runs(path)
+
+    assert runs[0].warnings == []
+    assert warnings == []

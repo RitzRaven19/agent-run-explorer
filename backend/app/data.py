@@ -125,6 +125,8 @@ def find_run_warnings(run: Run) -> list[str]:
         warnings.append(
             f"invalid duration: duration_ms is {run.duration_ms} (ended_at is before started_at)"
         )
+    if run.error is not None and run.error.step_index < 0:
+        warnings.append(f"error step_index is {run.error.step_index}, which is negative")
     if run.error is not None and run.error.step_index >= len(run.steps):
         warnings.append(
             f"error points to step {run.error.step_index} but only {len(run.steps)} steps were recorded"
