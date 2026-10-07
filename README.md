@@ -21,12 +21,13 @@ Mapped to the brief's "Must build":
 - **`GET /api/stats`**: run counts and success rate (overall and per agent), median and p95 duration, total cost per agent (with priced/unpriced counts), runs per day (zero-filled). Accepts the same filters as `/api/runs`.
 - **`POST /api/runs/{id}/explain`**: streamed text from a deterministic mock provider (no API key needed), chosen by `EXPLAIN_PROVIDER`.
 - **`/runs`**: server-rendered list. All state (filters, search, sort, page) is in the URL, so a filtered view can be copied and reopened. Visible loading, empty and error states. Also:
+  - **Quick investigations:** buttons above the filters (Failures, Slowest, Most expensive, Running now). Each one only rewrites the URL, replacing the current filters; the active one is highlighted and clicking it again returns to `/runs`.
   - **Tool filter:** chips for the five tools, combined with every other filter.
   - **Request indicator:** a small line under the list, such as `List request: 84 ms · 3 requests this session`. It shows the time of the list request and counts the list requests this browser tab has made, so you can see that a filter change costs one request and typing in the search box costs one per pause, not one per keystroke. A filter change makes exactly one backend call, the list request. (The counts on the status and agent chips and the header pill come from the unfiltered stats, which the Next.js server keeps for a few minutes.)
   - **Keyboard:** ↑ ↓ move between rows (starting at the first or last row when nothing is focused) and Enter opens the run, keeping the list's filters for "Back to runs". Arrow keys are never taken from the search box, selects or buttons.
 - **`/runs/[id]`**: metadata, the error (if any), steps in order with duration and tokens, step input/output readable in place, warnings, and a streaming "Explain this run" button. `/runs/run_0042#step-3` deep-links to a step: it is highlighted, scrolled into view, and its input and output open fully expanded even when long.
 - **`/dashboard`**: stat tiles and three charts (runs per day, cost per agent, runs by status per agent). Clicking a bar opens the matching filtered `/runs`.
-- **Tests**: 56 backend tests (including filters composing and a statistic checked against a hand-computed value) and 85 frontend tests (Vitest).
+- **Tests**: 56 backend tests (including filters composing and a statistic checked against a hand-computed value) and 99 frontend tests (Vitest).
 
 Data problems in the dataset (a duplicate id, a negative duration, a run with no steps, unpriced runs) are detected at load time, reported in `data_warnings`, and shown in the UI. See [DECISIONS.md](DECISIONS.md).
 
@@ -129,7 +130,7 @@ The backend needs no `.env` file: every backend variable has a default. The fron
 .venv/bin/python -m pytest          # Windows: .venv\Scripts\python -m pytest
 
 # Frontend (from frontend/)
-npm test                            # Vitest, 85 tests
+npm test                            # Vitest, 99 tests
 npm run lint
 npm run build
 ```
