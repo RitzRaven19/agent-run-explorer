@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { parseFilters, toSearchParams, type RunFilters as Filters } from "@/lib/filters";
-import { RUN_STATUSES, SORT_FIELDS, type AgentName, type SortField } from "@/lib/types";
+import { RUN_STATUSES, SORT_FIELDS, TOOL_NAMES, type AgentName, type SortField } from "@/lib/types";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -99,6 +99,30 @@ export default function RunFilters({ agents }: { agents: AgentName[] }) {
                 {agent}
               </label>
             ))}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend className="mb-1 text-sm font-medium">Tool used in any step</legend>
+          <div className="flex flex-wrap gap-2">
+            {TOOL_NAMES.map((tool) => {
+              const isSelected = filters.tool.includes(tool);
+              return (
+                <button
+                  key={tool}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => update({ tool: toggled(filters.tool, tool, TOOL_NAMES) })}
+                  className={`rounded-full border px-3 py-0.5 font-mono text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
+                    isSelected
+                      ? "border-slate-900 bg-slate-900 text-white"
+                      : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  {tool}
+                </button>
+              );
+            })}
           </div>
         </fieldset>
       </div>
