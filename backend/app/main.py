@@ -4,10 +4,12 @@ from contextlib import asynccontextmanager
 from datetime import date
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 from app import data
+from app.explain import get_provider
 from app.filters import RunFilters, SortField, SortOrder, filter_runs, query_runs
 from app.models import AgentName, HealthResponse, Run, RunListResponse, RunStatus, StatsResponse
 from app.stats import count_statuses, duration_stats, runs_per_day, stats_per_agent
@@ -18,6 +20,8 @@ logging.basicConfig(level=logging.INFO)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     data.load_data()
+    # Built at startup so a bad EXPLAIN_PROVIDER stops the server immediately instead of failing on the first request.
+    app.state.explain_provider = get_provider()
     yield
 
 
@@ -77,6 +81,18 @@ def get_run(run_id: str) -> Run:
         if run.id == run_id:
             return run
     raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
+
+
+@app.post("/api/runs/{run_id}/explain")
+def explain_run(run_id: str, request: Request) -> StreamingResponse:
+    # Looking the run up first means an unknown id gets a normal 404 before any streaming starts.
+    run = get_run(run_id)
+    return StreamingResponse(
+        request.app.state.explain_provider.stream(run),
+        media_type="text/plain; charset=utf-8",
+        # Tell browsers and proxies (nginx, Render) not to hold the text back until it is complete.
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.get("/api/stats", response_model=StatsResponse)
