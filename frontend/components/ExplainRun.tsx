@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import ErrorPanel from "@/components/ErrorPanel";
 import { apiBaseUrl, describeError, explainUrl, readDetail } from "@/lib/api";
 
 type ExplainStatus = "idle" | "streaming" | "done" | "stopped" | "error";
+
+// Nothing ever changes after hydration, so there is nothing to subscribe to.
+function subscribeToNothing() {
+  return () => {};
+}
 
 // Calls the backend straight from the browser: going through a Next.js server would add a hop
 // that can hold the text back until the whole answer is ready, which defeats streaming.
@@ -14,6 +19,9 @@ export default function ExplainRun({ runId }: { runId: string }) {
   const [errorMessage, setErrorMessage] = useState("");
   // A ref, not state: swapping the controller must not re-render, and the cleanup below needs the latest one.
   const controllerRef = useRef<AbortController | null>(null);
+  // false in the server HTML and during hydration, true right after. Until then the button has no click
+  // handler attached, so it is shown disabled rather than letting a click be silently lost.
+  const isHydrated = useSyncExternalStore(subscribeToNothing, () => true, () => false);
 
   // Leaving the page aborts a request that is still streaming, so it does not keep running unseen.
   useEffect(() => () => controllerRef.current?.abort(), []);
@@ -64,6 +72,12 @@ export default function ExplainRun({ runId }: { runId: string }) {
 
   const isStreaming = status === "streaming";
 
+  function buttonLabel(): string {
+    if (!isHydrated) return "Loading…";
+    if (status === "done" || status === "stopped") return "Explain again";
+    return "Explain this run";
+  }
+
   return (
     <section aria-labelledby="explain-title" className="rounded-lg border border-slate-200 bg-white p-5">
       <div className="flex flex-wrap items-center gap-3">
@@ -74,10 +88,10 @@ export default function ExplainRun({ runId }: { runId: string }) {
           <button
             type="button"
             onClick={explain}
-            disabled={isStreaming}
+            disabled={!isHydrated || isStreaming}
             className="rounded bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-700 disabled:opacity-60"
           >
-            {status === "done" || status === "stopped" ? "Explain again" : "Explain this run"}
+            {buttonLabel()}
           </button>
         )}
         {isStreaming && (
