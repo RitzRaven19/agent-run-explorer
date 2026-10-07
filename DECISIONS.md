@@ -17,7 +17,7 @@ I would stop loading a file into memory and use a database (Postgres, or ClickHo
 
 ## With one more day
 
-The `tool` filter, keyboard navigation in the list, a request indicator showing the list isn't refetched per keystroke, a Playwright end-to-end test for streaming Explain, and a per-status split of runs per day.
+A Playwright end-to-end test for streaming Explain and the keyboard navigation, and a per-status split of runs per day.
 
 ## Least happy with
 
@@ -53,6 +53,10 @@ The `tool` filter, keyboard navigation in the list, a request indicator showing 
 - **Server vs client components:** data is fetched in server components; only things that need the browser (filter bar, Explain, charts) are client components that receive plain props.
 - **Explain is called from the browser**, straight to the backend. Going through a Next.js server hop could buffer the text and defeat streaming. This is why CORS is needed.
 - **`?from=` back link** carries the list's filters to the detail page. It is validated by parsing it and rebuilding the URL, so a value like `//evil.com` can only ever produce `/runs`.
+- **Tool filter:** a run matches when *any* of its steps uses one of the chosen tools, and a run with no recorded steps (`run_0089`) matches none. It goes through the same shared filter as everything else, so `/api/stats` respects it too.
+- **Request indicator:** the list request is timed on the Next.js server, because that is where the backend call happens. Each request gets an id and the browser counts distinct ids, so React re-running an effect or Back showing an old result can't inflate the count. The agent list is a fixed constant in the frontend (mirroring the backend's `Literal`), which is what makes the list request the only backend call on `/runs`.
+- **Keyboard navigation moves real focus** between the run links instead of keeping a separate "selected row" state, so Enter, focus styles and screen readers use what the browser already provides. It ignores keys with modifiers and never acts while focus is in a text field, select or button.
+- **Deep link opens the step expanded** by reading the URL fragment with `useSyncExternalStore`, because the server never sees the `#` part. Clicking "Jump to step N" works too, but clicking it again when the hash already matches does nothing, so a step you collapsed by hand stays collapsed.
 - **Step numbers start at 0**, matching `index` in the data and `error.step_index`.
 - **Median and p95:** median is the middle value (average of the two middle ones when even); p95 uses nearest-rank (the value at rank ceil(0.95 × n)). Both use only non-running runs with a valid, non-negative duration.
 - **Recharts** over hand-drawn SVG: axes, tooltips and responsive sizing for little code. Each chart has a text summary and a "Show the numbers" table for accessibility.
