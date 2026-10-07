@@ -52,14 +52,26 @@
 - run_0008, run_0042, run_0153 have cost_usd = null. 15 runs have cost_usd = 0.0, which is a real value, not missing.
 - 9 runs have status "running", with no ended_at or duration_ms.
 - run_0172's prompt has leading/trailing whitespace; run_0121's prompt is French; 14 prompts contain newlines; some contain emoji or non-ASCII.
+- The 15 runs with cost_usd = 0.0 are all "failed" with 0 tokens (they failed before any model call), so $0 is a real cost. The 3 null-cost runs have real token counts, so they are genuinely unpriced.
+- 201 lines but 200 unique ids after removing the duplicate, so the list total is 200.
+- The file is not sorted by id or started_at, so the default sort must be explicit.
+- Only "failed" runs have an error object; "cancelled" runs have error = null.
+- Every day from 20 Jul to 31 Aug 2026 has at least one run, so zero-filling runs-per-day must be proven with a test fixture.
 - The loader must detect these, log a warning for each, expose them as data_warnings in the API, and never silently return wrong data.
 
-## The 4 open decisions in the brief
-- Status: NOT YET DECIDED. Present options with a recommendation and wait for my choice. Once decided, record each decision here and in DECISIONS.md.
-  1. What "total cost per agent" means when some cost_usd values are null.
-  2. How "running" runs sort, and whether they count toward success rate.
-  3. What to do with records that break a naive loader.
-  4. Whether /api/stats respects the list page's filters or is always global.
+## The 4 open decisions in the brief (DECIDED, Phase 1)
+Record these in DECISIONS.md in Phase 10.
+1. Null cost: an agent's total cost is the sum of its priced runs only. The API also returns priced_count and unpriced_count per agent, and the UI shows e.g. "$1.24 (1 run unpriced)". Null is never treated as 0, and a cost of $0.00 is kept as a real value.
+2. Running runs:
+   - Success rate = succeeded / (succeeded + failed + cancelled). Running runs are excluded and reported as their own count.
+   - Sorting by duration or cost puts nulls last in both directions, with id as the tie-breaker. Sorting by started_at treats running runs like any other.
+3. Broken records:
+   - Per-run warnings: every run gets a warnings: list[str] field, which drives the UI warning badge. The global data_warnings (from /api/health and /api/stats) lists every issue.
+   - run_0031: keep the internally consistent "running" copy (line 187), and record in data_warnings that the "succeeded" copy (line 75) was dropped and why.
+   - run_0064: keep the raw duration_ms = -4000 and add a warning. It is excluded from median and p95, and it sorts with the nulls (last) when sorting by duration.
+   - run_0089: an empty steps array with step_index = 3 shows "no steps recorded", plus a warning, and never crashes.
+   - Unparsable or invalid lines: skip them, log a warning and add them to data_warnings. Startup never crashes.
+4. Stats and filters: /api/stats accepts the same filter params as /api/runs and uses the same filter function. With no params it is global, and the dashboard calls it that way.
 
 ## Phase plan
 1. Read the brief and data, confirm the data issues, propose the 4 decisions, and wait for my choice.
