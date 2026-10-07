@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
 import Link from "next/link";
 import { Suspense } from "react";
 import "./globals.css";
 import AppMark from "@/components/AppMark";
 import HealthPill, { HealthPillPlaceholder } from "@/components/HealthPill";
 import NavLinks, { NavLinksFallback } from "@/components/NavLinks";
-
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
   title: "Agent Run Explorer",
@@ -17,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="font-sans antialiased">
         {/* overflow-hidden clips the wide horizon arc, so it cannot make the page scroll sideways. */}
         <div className="relative min-h-screen overflow-hidden">

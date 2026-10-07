@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
-/* next/font sets --font-geist and --font-geist-mono on <html>; Tailwind's font-sans and font-mono read them. */
+/* The geist package sets --font-geist-sans and --font-geist-mono on <html>; Tailwind's font-sans and font-mono read them.
+   The font files ship inside the package, so the build never has to reach Google Fonts. */
 @theme inline {
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
