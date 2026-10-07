@@ -100,7 +100,7 @@ function StatTiles({ stats }: { stats: StatsResponse }) {
           title={`Where p95 sits between ${range}`}
         />
       </StatTile>
-      <StatTile label="Total cost (priced runs)" value={formatCost(pricedTotal)} isMono>
+      <StatTile label="Total cost (priced runs)" value={formatCost(pricedTotal)}>
         {unpricedCount > 0 ? (
           <Link
             href="/runs"
@@ -120,24 +120,46 @@ function StatTiles({ stats }: { stats: StatsResponse }) {
 function DataWarnings({ warnings }: { warnings: string[] }) {
   if (warnings.length === 0) return null;
   return (
-    <details className="rounded-[14px] border border-warn/25 bg-warn/[0.06] px-5 py-4 text-warn">
-      <summary className="cursor-pointer text-sm">
-        ⚠ Data warnings ({warnings.length}) · what the loader flagged instead of silently fixing
+    <details className="group glass rounded-2xl px-5 py-4">
+      <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+        <span className="flex flex-col gap-0.5">
+          <span className="text-sm font-semibold text-ink">
+            <span aria-hidden="true" className="text-warn">
+              ⚠
+            </span>{" "}
+            {warnings.length} data {warnings.length === 1 ? "anomaly" : "anomalies"}
+          </span>
+          <span className="text-xs text-dim">Flagged by the loader instead of silently fixed</span>
+        </span>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          aria-hidden="true"
+          className="ml-auto shrink-0 text-muted transition-transform group-open:rotate-180"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
       </summary>
-      <ul className="mt-3 list-disc pl-[18px] text-[13px] leading-[1.8] text-[#f5f3ff]">
+      <ul className="mt-4 grid list-none grid-cols-1 gap-x-6 gap-y-2.5 p-0 text-[13px] md:grid-cols-2">
         {warnings.map((warning) => {
           const { runId, text } = splitWarning(warning);
           return (
-            <li key={warning}>
+            <li key={warning} className="flex min-w-0 items-center gap-2.5">
               {runId && (
-                <>
-                  <Link href={runDetailHref(runId, DEFAULT_FILTERS)} className="font-mono text-white underline">
-                    {runId}
-                  </Link>
-                  :{" "}
-                </>
+                <Link
+                  href={runDetailHref(runId, DEFAULT_FILTERS)}
+                  className="shrink-0 rounded-full bg-accent/15 px-2.5 py-0.5 font-mono text-[11px] text-accent hover:bg-accent/25"
+                >
+                  {runId}
+                </Link>
               )}
-              {text}
+              <span title={text} className="min-w-0 truncate text-muted">
+                {text}
+              </span>
             </li>
           );
         })}
