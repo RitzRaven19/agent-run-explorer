@@ -7,9 +7,10 @@ import { CostValue, DurationValue, WarningMark } from "@/components/RunValues";
 import ScrollableTable from "@/components/ScrollableTable";
 import StatusBadge from "@/components/StatusBadge";
 import { describeError, fetchRunsTimed, type TimedRuns } from "@/lib/api";
-import { slowestDurationMs } from "@/lib/durationBar";
+import { slowestDurationMs, type DurationScale } from "@/lib/durationBar";
 import { runDetailHref, runsListHref, type RunFilters } from "@/lib/filters";
 import { formatDateTimeUtc, formatDurationSeconds, promptPreview } from "@/lib/format";
+import { getGlobalStats } from "@/lib/globalStats";
 import type { RunSummary } from "@/lib/types";
 
 const PAGE_LINK_STYLE = "rounded-[10px] border border-white/[0.14] px-3 py-2";
@@ -19,7 +20,7 @@ function runsHref(filters: RunFilters, page: number): string {
   return runsListHref({ ...filters, page });
 }
 
-function RunRow({ run, filters, slowestMs }: { run: RunSummary; filters: RunFilters; slowestMs: number }) {
+function RunRow({ run, filters, scale }: { run: RunSummary; filters: RunFilters; scale: DurationScale }) {
   return (
     // focus-within highlights the whole row while its link has focus (keyboard "selection"). A failed run gets a pink edge.
     <tr
@@ -45,7 +46,7 @@ function RunRow({ run, filters, slowestMs }: { run: RunSummary; filters: RunFilt
       <td className="px-3 py-3.5 text-right text-[13px] whitespace-nowrap tabular-nums">
         <div className="flex flex-col items-end gap-[5px]">
           <DurationValue run={run} />
-          <DurationBar run={run} slowestMs={slowestMs} />
+          <DurationBar run={run} scale={scale} />
         </div>
       </td>
       <td className="px-3 py-3.5 text-right text-[13px] whitespace-nowrap tabular-nums">
@@ -57,6 +58,18 @@ function RunRow({ run, filters, slowestMs }: { run: RunSummary; filters: RunFilt
       </td>
     </tr>
   );
+}
+
+// The bars use the slowest valid run in the whole dataset, from the cached global stats (no extra request per filter
+// change). If those stats are unavailable, the list still renders and falls back to the slowest run on this page.
+async function durationScale(items: RunSummary[]): Promise<DurationScale> {
+  try {
+    const slowest = (await getGlobalStats()).duration.max_ms;
+    if (slowest !== null) return { ms: slowest, scope: "dataset" };
+  } catch {
+    // Fall through to the page scale.
+  }
+  return { ms: slowestDurationMs(items), scope: "page" };
 }
 
 function Pagination({ filters, lastPage }: { filters: RunFilters; lastPage: number }) {
@@ -136,7 +149,7 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
 
   const first = (page - 1) * page_size + 1;
   const last = Math.min(page * page_size, total);
-  const slowestMs = slowestDurationMs(items);
+  const scale = await durationScale(items);
 
   return (
     <div className="flex flex-col gap-6">
@@ -164,7 +177,7 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
                   <th className="px-3 py-3.5 font-medium">Started</th>
                   <th
                     className="px-3 py-3.5 text-right font-medium"
-                    title={`Bar = duration relative to the slowest run on this page (${formatDurationSeconds(slowestMs)})`}
+                    title={`Bar = duration relative to the slowest ${scale.scope === "page" ? "run on this page" : "run"} (${formatDurationSeconds(scale.ms)})`}
                   >
                     Duration
                   </th>
@@ -175,7 +188,7 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
               </thead>
               <tbody>
                 {items.map((run) => (
-                  <RunRow key={run.id} run={run} filters={filters} slowestMs={slowestMs} />
+                  <RunRow key={run.id} run={run} filters={filters} scale={scale} />
                 ))}
               </tbody>
             </table>

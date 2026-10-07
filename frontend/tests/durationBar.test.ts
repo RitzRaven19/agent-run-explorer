@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { durationBarPercent, slowestDurationMs } from "@/lib/durationBar";
+import { durationBarPercent, durationBarTitle, slowestDurationMs } from "@/lib/durationBar";
 import type { RunBase } from "@/lib/types";
 
 function run(status: RunBase["status"], durationMs: number | null): Pick<RunBase, "status" | "duration_ms"> {
@@ -34,5 +34,29 @@ describe("how full a duration bar is", () => {
 
   it("does not divide by zero when there is no slowest run", () => {
     expect(durationBarPercent(1000, 0)).toBe(2);
+  });
+});
+
+describe("bar tooltip", () => {
+  it("names the slowest run in the dataset", () => {
+    expect(durationBarTitle(48, { ms: 49_493, scope: "dataset" })).toBe("48% of the slowest run, 49.5 s");
+  });
+
+  it("says 'on this page' only for the page fallback", () => {
+    expect(durationBarTitle(100, { ms: 8000, scope: "page" })).toBe("100% of the slowest run on this page, 8.0 s");
+  });
+});
+
+describe("a run's bar does not depend on the page", () => {
+  it("is the same for the same duration and dataset scale", () => {
+    const datasetSlowest = 49_493;
+    const pageWithSlowRun = [run("failed", 49_493), run("succeeded", 12_000)];
+    const pageWithoutIt = [run("succeeded", 12_000), run("succeeded", 3000)];
+
+    // Measured against the page, the same 12 s run gets different bars; against the dataset it does not.
+    expect(durationBarPercent(12_000, slowestDurationMs(pageWithSlowRun))).not.toBe(
+      durationBarPercent(12_000, slowestDurationMs(pageWithoutIt)),
+    );
+    expect(durationBarPercent(12_000, datasetSlowest)).toBe(24);
   });
 });

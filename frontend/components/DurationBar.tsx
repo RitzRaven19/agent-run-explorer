@@ -1,13 +1,13 @@
 import type { CSSProperties } from "react";
-import { durationBarPercent } from "@/lib/durationBar";
-import { formatDurationSeconds, hasInvalidDuration } from "@/lib/format";
+import { durationBarPercent, durationBarTitle, type DurationScale } from "@/lib/durationBar";
+import { hasInvalidDuration } from "@/lib/format";
 import type { RunBase } from "@/lib/types";
 
-type Props = { run: Pick<RunBase, "status" | "duration_ms">; slowestMs: number };
+type Props = { run: Pick<RunBase, "status" | "duration_ms">; scale: DurationScale };
 
-// A thin bar under the duration, filled in proportion to the slowest run on the page.
-// Running and invalid durations get their own look, so they are never mistaken for a real, short run.
-export default function DurationBar({ run, slowestMs }: Props) {
+// A thin bar under the duration, filled in proportion to the slowest run in the dataset, so a run's bar is the
+// same on every page. Running and invalid durations get their own look, so they are never mistaken for a real, short run.
+export default function DurationBar({ run, scale }: Props) {
   let fill: CSSProperties | null = null;
   let title = "No duration recorded";
 
@@ -21,9 +21,9 @@ export default function DurationBar({ run, slowestMs }: Props) {
     };
     title = `Invalid duration (${run.duration_ms} ms): excluded from median and p95`;
   } else if (run.duration_ms !== null) {
-    const percent = durationBarPercent(run.duration_ms, slowestMs);
+    const percent = durationBarPercent(run.duration_ms, scale.ms);
     fill = { width: `${percent}%`, background: "linear-gradient(90deg, #7c3aed, #c4b5fd)" };
-    title = `${percent}% of the slowest run on this page (${formatDurationSeconds(slowestMs)})`;
+    title = durationBarTitle(percent, scale);
   }
 
   return (
