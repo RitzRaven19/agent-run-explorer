@@ -1,0 +1,15 @@
+name: keep-awake
+
+# Render's free tier sleeps after 15 minutes without traffic; a ping every 14 minutes keeps it awake.
+on:
+  schedule:
+    - cron: "*/14 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      # --fail makes curl exit non-zero on an HTTP error, so a broken backend turns the run red.
+      # The long timeout allows for a cold start if the service was already asleep.
+      - run: curl --fail --silent --show-error --max-time 90 "${{ vars.BACKEND_URL }}/api/health"
