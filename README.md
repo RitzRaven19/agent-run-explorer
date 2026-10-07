@@ -26,8 +26,8 @@ Mapped to the brief's "Must build":
   - **Request indicator:** a small line under the list, such as `List request: 84 ms · 3 requests this session`. It shows the time of the list request and counts the list requests this browser tab has made, so you can see that a filter change costs one request and typing in the search box costs one per pause, not one per keystroke. A filter change makes exactly one backend call, the list request. (The counts on the status and agent chips and the header pill come from the unfiltered stats, which the Next.js server keeps for a few minutes.)
   - **Keyboard:** ↑ ↓ move between rows (starting at the first or last row when nothing is focused) and Enter opens the run, keeping the list's filters for "Back to runs". Arrow keys are never taken from the search box, selects or buttons.
 - **`/runs/[id]`**: metadata, the error (if any), steps in order with duration and tokens, step input/output readable in place, warnings, and a streaming "Explain this run" button. `/runs/run_0042#step-3` deep-links to a step: it is highlighted, scrolled into view, and its input and output open fully expanded even when long.
-- **`/dashboard`**: stat tiles and three charts (runs per day, cost per agent, runs by status per agent). Clicking a bar opens the matching filtered `/runs`.
-- **Tests**: 56 backend tests (including filters composing and a statistic checked against a hand-computed value) and 99 frontend tests (Vitest).
+- **`/dashboard`**: stat tiles, one card per agent (runs, success rate, priced cost with its unpriced count, and a link to that agent's runs) and three charts (runs per day, cost per agent, runs by status per agent). Clicking a bar opens the matching filtered `/runs`.
+- **Tests**: 56 backend tests (including filters composing and a statistic checked against a hand-computed value) and 105 frontend tests (Vitest).
 
 Data problems in the dataset (a duplicate id, a negative duration, a run with no steps, unpriced runs) are detected at load time, reported in `data_warnings`, and shown in the UI. See [DECISIONS.md](DECISIONS.md).
 
@@ -130,7 +130,7 @@ The backend needs no `.env` file: every backend variable has a default. The fron
 .venv/bin/python -m pytest          # Windows: .venv\Scripts\python -m pytest
 
 # Frontend (from frontend/)
-npm test                            # Vitest, 99 tests
+npm test                            # Vitest, 105 tests
 npm run lint
 npm run build
 ```
