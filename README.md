@@ -18,7 +18,7 @@ Mapped to the brief's "Must build":
 
 - **`GET /api/runs`**: pagination with a total count, multi-value `status`, `agent` and `tool` filters (`tool` matches runs where any step used it), a `started_at` date range, text search over the prompt, sort by `started_at`, `duration_ms` or `cost_usd`. All filters compose in one request. Steps are not included in list items.
 - **`GET /api/runs/{id}`**: one run with its steps; a proper 404 for an unknown id.
-- **`GET /api/stats`**: run counts and success rate (overall and per agent), median and p95 duration, total cost per agent (with priced/unpriced counts), runs per day (zero-filled). Accepts the same filters as `/api/runs`.
+- **`GET /api/stats`**: run counts and success rate (overall and per agent), median and p95 duration, total cost per agent (with priced/unpriced counts), runs per day (zero-filled over the dataset's date range, clipped to any requested dates). Accepts the same filters as `/api/runs`.
 - **`POST /api/runs/{id}/explain`**: streamed text from a deterministic mock provider (no API key needed), chosen by `EXPLAIN_PROVIDER`.
 - **`/runs`**: server-rendered list. All state (filters, search, sort, page) is in the URL, so a filtered view can be copied and reopened. Visible loading, empty and error states. Also:
   - **Quick investigations:** buttons above the filters (Failures, Slowest, Most expensive, Running now). Each one only rewrites the URL, replacing the current filters; the active one is highlighted and clicking it again returns to `/runs`.
@@ -27,7 +27,7 @@ Mapped to the brief's "Must build":
   - **Keyboard:** ↑ ↓ move between rows (starting at the first or last row when nothing is focused) and Enter opens the run, keeping the list's filters for "Back to runs". Arrow keys are never taken from the search box, selects or buttons.
 - **`/runs/[id]`**: metadata, the error (if any), steps in order with duration and tokens, step input/output readable in place, warnings, and a streaming "Explain this run" button. `/runs/run_0042#step-3` deep-links to a step: it is highlighted, scrolled into view, and its input and output open fully expanded even when long.
 - **`/dashboard`**: stat tiles, one card per agent (runs, success rate, priced cost with its unpriced count, and a link to that agent's runs) and three charts (runs per day, cost per agent, runs by status per agent). Clicking a bar opens the matching filtered `/runs`.
-- **Tests**: 56 backend tests (including filters composing and a statistic checked against a hand-computed value) and 105 frontend tests (Vitest).
+- **Tests**: 75 backend tests (including filters composing and a statistic checked against a hand-computed value) and 112 frontend tests (Vitest).
 
 Data problems in the dataset (a duplicate id, a negative duration, a run with no steps, unpriced runs) are detected at load time, reported in `data_warnings`, and shown in the UI. See [DECISIONS.md](DECISIONS.md).
 
@@ -126,11 +126,11 @@ The backend needs no `.env` file: every backend variable has a default. The fron
 ## Tests and checks
 
 ```bash
-# Backend: 56 tests (from backend/, with the venv's Python)
+# Backend: 75 tests (from backend/, with the venv's Python)
 .venv/bin/python -m pytest          # Windows: .venv\Scripts\python -m pytest
 
 # Frontend (from frontend/)
-npm test                            # Vitest, 105 tests
+npm test                            # Vitest, 112 tests
 npm run lint
 npm run build
 ```
@@ -162,7 +162,7 @@ Base URL: `http://localhost:8000` locally. Errors are JSON: `{"detail": "..."}`.
 | `agent` | repeatable: `contract-reviewer`, `email-drafter`, `invoice-extractor`, `kpi-analyst`, `support-router` |
 | `tool` | repeatable: `llm`, `sql`, `http`, `vector_search`, `none`. Matches runs where any step uses one of them; a run with no recorded steps matches none |
 | `started_from`, `started_to` | `YYYY-MM-DD`, inclusive of whole days |
-| `q` | case-insensitive text search in the prompt |
+| `q` | case-insensitive text search in the prompt, at most 200 characters (longer gets a `422`) |
 | `sort` | `started_at` (default), `duration_ms`, `cost_usd` |
 | `order` | `desc` (default), `asc` |
 | `page` | from 1 (default 1) |

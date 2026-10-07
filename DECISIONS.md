@@ -62,4 +62,5 @@ A Playwright end-to-end test for streaming Explain and the keyboard navigation, 
 - **Charts are plain HTML and CSS**, not a chart library. The three charts are simple bars, so a library would add a dependency for little. Each bar is a real link to the matching runs, with a spoken label, and each chart has a one-sentence summary.
 - **Duration bars** in the list are measured against the slowest run on the current page, not the whole dataset, so the list needs no second backend call. `/api/stats` also returns the fastest and slowest valid duration (`min_ms`, `max_ms`), which the dashboard uses to place the median and p95 on their tile bars.
 - **Vitest on pure functions:** URL parsing, the back-link safety check and formatting are where bugs would be silent. A component or end-to-end test would need extra tooling that I judged not worth it in the time.
+- **Hardening:** bounded stats range, input limits, id index.
 - **Free hosting:** Render (backend) and Vercel (frontend), plus a GitHub Actions ping every 14 minutes to avoid Render's idle sleep. A best-effort workaround, not production practice.
