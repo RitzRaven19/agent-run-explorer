@@ -25,9 +25,6 @@ export default function ErrorPanel({ title = "The runs could not be loaded", mes
     >
       <h2 className="text-lg font-semibold text-[#f9a8d4]">{title}</h2>
       <p className="mt-2 text-sm text-[#fce7f3]">{message}</p>
-      <p className="mt-2 text-sm text-muted">
-        The free backend goes to sleep when idle and can take up to a minute to wake up. Wait a moment and try again.
-      </p>
       <button type="button" onClick={retry} disabled={isPending} className="outline-button mt-4 disabled:opacity-60">
         {isPending ? "Retrying…" : "Try again"}
       </button>

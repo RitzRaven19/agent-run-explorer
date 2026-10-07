@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import ErrorPanel from "@/components/ErrorPanel";
-import { apiBaseUrl, describeError, explainUrl, readDetail } from "@/lib/api";
+import { apiBaseUrl, describeError, explainUrl, fetchFailureMessage, readDetail } from "@/lib/api";
 
 type ExplainStatus = "idle" | "streaming" | "done" | "stopped" | "error";
 
@@ -60,7 +60,7 @@ export default function ExplainRun({ runId }: { runId: string }) {
       // Stop, a newer request and leaving the page all abort on purpose; none of them is a failure.
       if (controller.signal.aborted) return;
       // fetch rejects with a TypeError when the server cannot be reached at all.
-      setErrorMessage(error instanceof TypeError ? `Could not reach the backend at ${apiBaseUrl()}` : describeError(error));
+      setErrorMessage(error instanceof TypeError ? fetchFailureMessage(error, apiBaseUrl()) : describeError(error));
       setStatus("error");
     }
   }

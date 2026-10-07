@@ -22,13 +22,28 @@ export async function readDetail(response: Response): Promise<string> {
   return response.statusText;
 }
 
+// Vercel gives a function minutes on the Hobby plan (checked in its docs, with Fluid compute on). Giving up well before
+// that means a sleeping free-tier backend shows our own "waking up" message instead of a hung page or a platform 504.
+const BACKEND_TIMEOUT_MS = 25_000;
+
+const WAKING_UP_HINT = "free hosting sleeps when idle. Try again in ~30 s.";
+
+// Turns a failed fetch (the backend never answered) into text a person can act on. A timeout is the usual sign of a
+// sleeping free-tier backend; any other failure may be the same thing or a wrong address.
+export function fetchFailureMessage(error: unknown, baseUrl: string): string {
+  if (error instanceof Error && error.name === "TimeoutError") {
+    return `The backend is waking up — ${WAKING_UP_HINT}`;
+  }
+  return `Could not reach the backend at ${baseUrl}. It may be waking up — ${WAKING_UP_HINT}`;
+}
+
 async function request(path: string): Promise<Response> {
   const baseUrl = apiBaseUrl();
   try {
     // no-store: the list changes with every filter, so Next must never reuse an earlier answer.
-    return await fetch(`${baseUrl}${path}`, { cache: "no-store" });
-  } catch {
-    throw new Error(`Could not reach the backend at ${baseUrl}`);
+    return await fetch(`${baseUrl}${path}`, { cache: "no-store", signal: AbortSignal.timeout(BACKEND_TIMEOUT_MS) });
+  } catch (error) {
+    throw new Error(fetchFailureMessage(error, baseUrl));
   }
 }
 

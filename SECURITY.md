@@ -24,6 +24,7 @@ This is a take-home demo over a fixed, read-only dataset. This page says what pr
 
 - **No rate limiting.** Anyone can call any endpoint as often as they like, including the streaming one.
 - **No security headers** are set by the app beyond what Vercel and Render add by default (for example no Content-Security-Policy of its own).
+- **Backend timeout.** Calls from the Next.js server to the backend give up after 25 seconds, so a sleeping free-tier backend shows a "waking up" message instead of a hung page. There are no retries or circuit breaker.
 - **Free hosting.** Render's free tier and the keep-awake ping are a convenience, not a production setup: no SLA, shared resources, and the service restarts from the file on every deploy.
 - **Dependencies.** `npm audit` reports high-severity advisories in development dependencies (build and lint tooling, not code shipped to users). I have not force-upgraded them, because that risks breaking the build close to the deadline. `pip` dependencies are pinned in `backend/requirements.txt` but are not scanned automatically.
 - **The explain provider is a mock.** If a real model were connected, prompts and step data would be sent to a third party, and prompt-injection from run content would need handling.
