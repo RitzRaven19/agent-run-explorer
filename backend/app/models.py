@@ -117,6 +117,9 @@ class AgentStats(StatusCounts):
 class DurationStats(BaseModel):
     median_ms: Number | None
     p95_ms: Number | None
+    # The fastest and slowest of the same runs, so a client can show where the median and p95 sit between them.
+    min_ms: Number | None
+    max_ms: Number | None
     completed_count: int
 
 

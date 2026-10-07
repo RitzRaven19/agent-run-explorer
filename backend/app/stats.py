@@ -56,17 +56,19 @@ def nearest_rank(sorted_values: list[Number], percentile: int) -> Number:
 
 
 def duration_stats(runs: list[Run]) -> DurationStats:
-    """Median and p95 over completed runs: not running, with a valid (non-negative) duration."""
+    """Median, p95, fastest and slowest over completed runs: not running, with a valid (non-negative) duration."""
     durations = sorted(
         run.valid_duration_ms
         for run in runs
         if run.status != "running" and run.valid_duration_ms is not None
     )
     if not durations:
-        return DurationStats(median_ms=None, p95_ms=None, completed_count=0)
+        return DurationStats(median_ms=None, p95_ms=None, min_ms=None, max_ms=None, completed_count=0)
     return DurationStats(
         median_ms=statistics.median(durations),
         p95_ms=nearest_rank(durations, 95),
+        min_ms=durations[0],
+        max_ms=durations[-1],
         completed_count=len(durations),
     )
 

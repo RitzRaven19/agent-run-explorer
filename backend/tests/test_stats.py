@@ -41,6 +41,9 @@ def test_median_and_p95_use_only_completed_runs(fixture_client):
     assert duration["median_ms"] == 2500
     # p95 nearest-rank: n = 4, rank = ceil(0.95 * 4) = ceil(3.8) = 4, so the 4th value = 10000
     assert duration["p95_ms"] == 10000
+    # fastest and slowest of those same four runs
+    assert duration["min_ms"] == 1000
+    assert duration["max_ms"] == 10000
 
 
 def test_cost_per_agent_ignores_null_and_keeps_zero(fixture_client):
@@ -90,7 +93,13 @@ def test_no_runs_and_no_dates_gives_no_days_and_null_stats(fixture_client):
     assert body["overall"]["total"] == 0
     # 0 finished runs means a success rate of 0 / 0, which is reported as null instead of dividing by zero
     assert body["overall"]["success_rate"] is None
-    assert body["duration"] == {"median_ms": None, "p95_ms": None, "completed_count": 0}
+    assert body["duration"] == {
+        "median_ms": None,
+        "p95_ms": None,
+        "min_ms": None,
+        "max_ms": None,
+        "completed_count": 0,
+    }
     assert body["per_agent"] == []
 
 
@@ -163,3 +172,8 @@ def test_real_data_total_and_excluded_negative_duration(real_client):
     assert len(completed) == 190
     assert body["duration"]["completed_count"] == 190
     assert body["duration"]["p95_ms"] >= body["duration"]["median_ms"] > 0
+    # the fastest and slowest are the extremes of the same 190 runs, so the median and p95 sit between them
+    durations = [run["duration_ms"] for run in completed]
+    assert body["duration"]["min_ms"] == min(durations)
+    assert body["duration"]["max_ms"] == max(durations)
+    assert body["duration"]["min_ms"] <= body["duration"]["median_ms"] <= body["duration"]["p95_ms"] <= body["duration"]["max_ms"]
