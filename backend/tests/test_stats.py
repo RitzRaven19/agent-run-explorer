@@ -115,6 +115,15 @@ def test_stats_respect_the_same_filters_as_the_list(real_client):
     assert body["per_agent"][0]["total"] == runs_total
 
 
+def test_stats_respect_the_tool_filter(real_client):
+    params = {"tool": ["http", "vector_search"], "status": "failed"}
+    runs_total = real_client.get("/api/runs", params=params).json()["total"]
+    all_runs_total = get_stats(real_client)["overall"]["total"]
+    assert 0 < runs_total < all_runs_total
+
+    assert get_stats(real_client, **params)["overall"]["total"] == runs_total
+
+
 def test_stats_filters_compose_like_the_list(real_client):
     params = {"status": "failed", "agent": ["kpi-analyst", "email-drafter"], "started_from": "2026-08-01"}
     runs_total = real_client.get("/api/runs", params=params).json()["total"]
@@ -125,6 +134,7 @@ def test_stats_filters_compose_like_the_list(real_client):
 def test_stats_reject_the_same_bad_params_as_the_list(real_client):
     assert real_client.get("/api/stats", params={"status": "exploded"}).status_code == 422
     assert real_client.get("/api/stats", params={"agent": "nobody"}).status_code == 422
+    assert real_client.get("/api/stats", params={"tool": "hammer"}).status_code == 422
     bad_range = {"started_from": "2026-08-10", "started_to": "2026-08-01"}
     assert real_client.get("/api/stats", params=bad_range).status_code == 422
 

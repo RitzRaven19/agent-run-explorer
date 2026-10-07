@@ -71,6 +71,50 @@ def test_filters_compose(client, raw_runs):
     assert body["total"] == len(expected_ids)
 
 
+def raw_run_uses_tool(run: dict, tools: tuple[str, ...]) -> bool:
+    return any(step["tool"] in tools for step in run["steps"])
+
+
+def test_tool_filter_matches_runs_where_any_step_uses_the_tool(client, raw_runs):
+    expected_ids = {run["id"] for run in raw_runs if raw_run_uses_tool(run, ("http",))}
+    assert 0 < len(expected_ids) < len(raw_runs), "the filter should neither match nothing nor everything"
+
+    body = get_runs(client, tool="http")
+
+    assert {item["id"] for item in body["items"]} == expected_ids
+    assert body["total"] == len(expected_ids)
+
+
+def test_several_tools_match_runs_using_any_of_them(client, raw_runs):
+    expected_ids = {run["id"] for run in raw_runs if raw_run_uses_tool(run, ("http", "sql"))}
+
+    items = get_all_items(client, tool=["http", "sql"])
+
+    assert {item["id"] for item in items} == expected_ids
+    assert len(items) == len(expected_ids)
+
+
+def test_tool_filter_composes_with_agent_and_status(client, raw_runs):
+    expected_ids = {
+        run["id"]
+        for run in raw_runs
+        if raw_run_uses_tool(run, ("sql",))
+        and run["agent"] in ("kpi-analyst", "email-drafter")
+        and run["status"] == "failed"
+    }
+    assert expected_ids, "test data should match at least one run"
+
+    body = get_runs(client, tool="sql", agent=["kpi-analyst", "email-drafter"], status="failed")
+
+    assert {item["id"] for item in body["items"]} == expected_ids
+    assert body["total"] == len(expected_ids)
+
+
+def test_run_with_no_steps_never_matches_a_tool_filter(client):
+    # run_0089 recorded no steps, so it used no tool.
+    assert "run_0089" not in {item["id"] for item in get_all_items(client, tool=["llm", "sql", "http", "vector_search", "none"])}
+
+
 def test_multiple_statuses_return_both_and_nothing_else(client, raw_runs):
     body = get_runs(client, status=["failed", "cancelled"])
 
@@ -172,6 +216,7 @@ def test_broken_records_carry_warnings(client):
         {"page": 0},
         {"status": "exploded"},
         {"agent": "nobody"},
+        {"tool": "hammer"},
         {"sort": "prompt"},
         {"started_from": "2026-08-10", "started_to": "2026-08-01"},
     ],
