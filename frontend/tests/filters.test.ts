@@ -20,6 +20,7 @@ describe("parseFilters and toSearchParams", () => {
     const filters: RunFilters = {
       status: ["succeeded", "failed"],
       agent: ["email-drafter", "kpi-analyst"],
+      tool: ["sql", "http"],
       q: "invoice",
       started_from: "2026-07-20",
       started_to: "2026-08-31",
@@ -32,6 +33,7 @@ describe("parseFilters and toSearchParams", () => {
 
     expect(query).toContain("status=succeeded&status=failed");
     expect(query).toContain("agent=email-drafter&agent=kpi-analyst");
+    expect(query).toContain("tool=sql&tool=http");
     expect(parseQuery(query)).toEqual(filters);
   });
 
@@ -72,6 +74,15 @@ describe("invalid values fall back to the defaults", () => {
 
     expect(filters.status).toEqual(["failed"]);
     expect(filters.agent).toEqual(["kpi-analyst"]);
+  });
+
+  it("drops unknown tools but keeps the valid ones", () => {
+    expect(parseQuery("tool=hammer&tool=sql").tool).toEqual(["sql"]);
+    expect(parseQuery("tool=hammer").tool).toEqual([]);
+  });
+
+  it("writes repeated tools once each, in the fixed tool order", () => {
+    expect(parseQuery("tool=none&tool=llm&tool=none").tool).toEqual(["llm", "none"]);
   });
 
   it("trims the search text", () => {

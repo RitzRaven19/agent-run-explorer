@@ -13,7 +13,8 @@ export const AGENT_NAMES = [
 ] as const;
 export type AgentName = (typeof AGENT_NAMES)[number];
 
-export type ToolName = "llm" | "sql" | "http" | "vector_search" | "none";
+export const TOOL_NAMES = ["llm", "sql", "http", "vector_search", "none"] as const;
+export type ToolName = (typeof TOOL_NAMES)[number];
 
 export const SORT_FIELDS = ["started_at", "duration_ms", "cost_usd"] as const;
 export type SortField = (typeof SORT_FIELDS)[number];

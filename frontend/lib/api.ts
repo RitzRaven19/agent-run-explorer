@@ -69,7 +69,7 @@ export function explainUrl(runId: string): string {
 
 // Stats take the same filters as the list, but sort and paging mean nothing to them, so those are reset.
 export function fetchStats(filters: RunFilters = DEFAULT_FILTERS): Promise<StatsResponse> {
-  const { status, agent, q, started_from, started_to } = filters;
-  const filtersOnly: RunFilters = { ...DEFAULT_FILTERS, status, agent, q, started_from, started_to };
+  const { status, agent, tool, q, started_from, started_to } = filters;
+  const filtersOnly: RunFilters = { ...DEFAULT_FILTERS, status, agent, tool, q, started_from, started_to };
   return getJson<StatsResponse>(`/api/stats?${toSearchParams(filtersOnly)}`);
 }

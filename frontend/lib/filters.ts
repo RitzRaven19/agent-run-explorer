@@ -3,16 +3,19 @@ import {
   RUN_STATUSES,
   SORT_FIELDS,
   SORT_ORDERS,
+  TOOL_NAMES,
   type AgentName,
   type RunStatus,
   type SortField,
   type SortOrder,
+  type ToolName,
 } from "@/lib/types";
 
 // Everything the /runs page can be told to show. The URL is the only place this state lives.
 export type RunFilters = {
   status: RunStatus[];
   agent: AgentName[];
+  tool: ToolName[]; // runs where any step used one of these tools
   q: string;
   started_from: string; // YYYY-MM-DD, or "" for no lower bound
   started_to: string; // YYYY-MM-DD, or "" for no upper bound
@@ -25,6 +28,7 @@ export type RunFilters = {
 export const DEFAULT_FILTERS: RunFilters = {
   status: [],
   agent: [],
+  tool: [],
   q: "",
   started_from: "",
   started_to: "",
@@ -93,6 +97,7 @@ export function parseFilters(input: SearchParamsInput): RunFilters {
   return {
     status: pickAllowed(getAll(input, "status"), RUN_STATUSES),
     agent: pickAllowed(getAll(input, "agent"), AGENT_NAMES),
+    tool: pickAllowed(getAll(input, "tool"), TOOL_NAMES),
     q: (getOne(input, "q") ?? "").trim(),
     started_from: startedFrom,
     started_to: startedTo,
@@ -108,6 +113,7 @@ export function toSearchParams(filters: RunFilters): URLSearchParams {
   const params = new URLSearchParams();
   filters.status.forEach((status) => params.append("status", status));
   filters.agent.forEach((agent) => params.append("agent", agent));
+  filters.tool.forEach((tool) => params.append("tool", tool));
   if (filters.q) params.set("q", filters.q);
   if (filters.started_from) params.set("started_from", filters.started_from);
   if (filters.started_to) params.set("started_to", filters.started_to);
