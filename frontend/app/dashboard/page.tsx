@@ -26,7 +26,7 @@ import { STATUS_COLORS } from "@/lib/statusColors";
 import type { StatsResponse } from "@/lib/types";
 
 export const metadata: Metadata = {
-  title: "Dashboard · Agent Run Explorer",
+  title: "Dashboard",
 };
 
 const SUCCESS_RATE_FORMULA = "succeeded ÷ (succeeded + failed + cancelled)";

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import PageHeading from "@/components/PageHeading";
 import QuickInvestigations from "@/components/QuickInvestigations";
@@ -7,6 +8,10 @@ import RunsTableSkeleton from "@/components/RunsTableSkeleton";
 import { toFilterCounts, type FilterCounts } from "@/lib/filterCounts";
 import { parseFilters, toSearchParams } from "@/lib/filters";
 import { getGlobalStats } from "@/lib/globalStats";
+
+export const metadata: Metadata = {
+  title: "Runs",
+};
 
 // The numbers on the chips are a nicety: if the backend cannot be asked, the list itself still reports the error.
 async function loadFilterCounts(): Promise<FilterCounts | null> {

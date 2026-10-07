@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import Link from "next/link";
@@ -9,8 +9,12 @@ import HealthPill, { HealthPillPlaceholder } from "@/components/HealthPill";
 import NavLinks, { NavLinksFallback } from "@/components/NavLinks";
 
 export const metadata: Metadata = {
-  title: "Agent Run Explorer",
+  title: { default: "Agent Run Explorer", template: "%s · Agent Run Explorer" },
   description: "Browse, filter and inspect AI agent runs.",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#08040f",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
