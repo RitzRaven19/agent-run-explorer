@@ -138,6 +138,23 @@ export function runsForAgentHref(agent: AgentName): string {
   return runsListHref({ ...DEFAULT_FILTERS, agent: [agent] });
 }
 
+export type QuickPreset = { label: string; filters: RunFilters };
+
+// Each preset is a whole filter set, not a change on top of the current one, so clicking it replaces every filter.
+export const QUICK_PRESETS: QuickPreset[] = [
+  { label: "Failures", filters: { ...DEFAULT_FILTERS, status: ["failed"] } },
+  { label: "Slowest", filters: { ...DEFAULT_FILTERS, sort: "duration_ms", order: "desc" } },
+  { label: "Most expensive", filters: { ...DEFAULT_FILTERS, sort: "cost_usd", order: "desc" } },
+  { label: "Running now", filters: { ...DEFAULT_FILTERS, status: ["running"] } },
+];
+
+// Page is ignored so a preset stays highlighted while you page through its results.
+export function isPresetActive(preset: QuickPreset, current: RunFilters): boolean {
+  return (
+    toSearchParams({ ...current, page: 1 }).toString() === toSearchParams(preset.filters).toString()
+  );
+}
+
 // The list's query string travels to the run page as ?from=, so "Back to runs" can restore the same view.
 export function runDetailHref(runId: string, filters: RunFilters): string {
   const path = `/runs/${encodeURIComponent(runId)}`;

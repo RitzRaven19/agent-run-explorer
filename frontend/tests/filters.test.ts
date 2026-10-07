@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { AGENT_NAMES } from "@/lib/types";
 import {
   DEFAULT_FILTERS,
+  QUICK_PRESETS,
   backToRunsHref,
+  isPresetActive,
   parseFilters,
   runDetailHref,
   runsForAgentHref,
@@ -122,6 +124,48 @@ describe("date filters", () => {
 
     expect(filters.started_from).toBe("");
     expect(filters.started_to).toBe("");
+  });
+});
+
+describe("quick investigations", () => {
+  const [failures, slowest, expensive, running] = QUICK_PRESETS;
+
+  it.each([
+    [failures, "/runs?status=failed"],
+    [slowest, "/runs?sort=duration_ms"],
+    [expensive, "/runs?sort=cost_usd"],
+    [running, "/runs?status=running"],
+  ])("$label sets exactly its query", (preset, href) => {
+    expect(runsListHref(preset.filters)).toBe(href);
+  });
+
+  it("is active only for its own URL", () => {
+    for (const preset of QUICK_PRESETS) {
+      const current = parseQuery(toSearchParams(preset.filters).toString());
+      for (const other of QUICK_PRESETS) {
+        expect(isPresetActive(other, current)).toBe(other === preset);
+      }
+    }
+  });
+
+  it("stays active on a later page", () => {
+    expect(isPresetActive(failures, parseQuery("status=failed&page=2"))).toBe(true);
+  });
+
+  it.each([
+    "status=failed&agent=kpi-analyst",
+    "status=failed&q=refund",
+    "status=failed&tool=sql",
+    "status=failed&started_from=2026-08-01",
+    "status=failed&status=running",
+    "sort=duration_ms&order=asc",
+    "",
+  ])("is not active for %s", (query) => {
+    expect(isPresetActive(failures, parseQuery(query))).toBe(false);
+  });
+
+  it("ignores params the page does not know", () => {
+    expect(isPresetActive(failures, parseQuery("status=failed&utm_source=mail"))).toBe(true);
   });
 });
 
