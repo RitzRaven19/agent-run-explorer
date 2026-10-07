@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import PageHeading from "@/components/PageHeading";
+import QuickInvestigations from "@/components/QuickInvestigations";
 import RunFilters from "@/components/RunFilters";
 import RunsResults from "@/components/RunsResults";
 import RunsTableSkeleton from "@/components/RunsTableSkeleton";
@@ -26,6 +27,7 @@ export default async function RunsPage({ searchParams }: PageProps<"/runs">) {
       <PageHeading eyebrow="Agent traces" title="Agent Runs">
         Browse every run, filter by status, agent and tool, and open a run to read its steps.
       </PageHeading>
+      <QuickInvestigations />
       <RunFilters counts={counts} />
       {/* The key changes with every filter, so React shows the skeleton again instead of keeping the old table. */}
       <Suspense key={toSearchParams(filters).toString()} fallback={<RunsTableSkeleton />}>
