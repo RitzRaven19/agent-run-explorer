@@ -27,7 +27,7 @@ export default function AgentCostChart({ agents }: { agents: AgentStats[] }) {
                 boxShadow: "0 0 18px rgba(139,92,246,0.35)",
               }}
             />
-            <span className="font-mono text-xs whitespace-nowrap text-ink">
+            <span className="text-xs whitespace-nowrap text-ink tabular-nums">
               {formatPricedTotal(agent.total_cost_usd, agent.unpriced_count)}
             </span>
           </span>

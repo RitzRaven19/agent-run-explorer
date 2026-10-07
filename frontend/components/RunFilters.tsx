@@ -23,7 +23,7 @@ function toggled<T extends string>(selected: T[], value: T, order: readonly T[])
 
 function ChipCount({ count }: { count: number | undefined }) {
   if (count === undefined) return null;
-  return <span className="font-mono text-[11px] text-dim">{count}</span>;
+  return <span className="text-[11px] text-dim tabular-nums">{count}</span>;
 }
 
 // counts is null when the backend could not be asked; the chips then show no numbers.
@@ -120,7 +120,7 @@ export default function RunFilters({ counts }: { counts: FilterCounts | null }) 
               <button
                 key={tool}
                 type="button"
-                className="chip font-mono text-xs"
+                className="chip"
                 aria-pressed={filters.tool.includes(tool)}
                 onClick={() => update({ tool: toggled(filters.tool, tool, TOOL_NAMES) })}
               >

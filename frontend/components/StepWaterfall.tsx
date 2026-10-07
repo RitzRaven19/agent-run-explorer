@@ -28,7 +28,7 @@ export default function StepWaterfall({ run, failingIndex }: { run: Pick<Run, "s
               title={`Step ${bar.index} · ${bar.name} · ${bar.tool} · ${isFailing ? "failed after " : ""}${time}${share}`}
               className="grid grid-cols-[150px_minmax(0,1fr)_56px] items-center gap-3 text-xs"
             >
-              <span className={`truncate font-mono ${isFailing ? "text-[#f9a8d4]" : "text-soft"}`}>
+              <span className={`truncate ${isFailing ? "text-[#f9a8d4]" : "text-soft"}`}>
                 {bar.index} · {bar.name}
               </span>
               <span className="relative h-3.5 rounded bg-white/[0.04]">
@@ -42,14 +42,14 @@ export default function StepWaterfall({ run, failingIndex }: { run: Pick<Run, "s
                   }}
                 />
               </span>
-              <span className={`text-right font-mono ${isFailing ? "text-[#f9a8d4]" : "text-muted"}`}>
+              <span className={`text-right tabular-nums ${isFailing ? "text-[#f9a8d4]" : "text-muted"}`}>
                 {bar.durationMs === null ? "…" : formatDurationSeconds(bar.durationMs)}
                 {isFailing && " ✕"}
               </span>
             </a>
           );
         })}
-        <div className="grid grid-cols-[150px_minmax(0,1fr)_56px] gap-3 font-mono text-[10px] text-faint">
+        <div className="grid grid-cols-[150px_minmax(0,1fr)_56px] gap-3 text-[10px] text-faint tabular-nums">
           <span />
           <span className="flex justify-between">
             <span>0 s</span>

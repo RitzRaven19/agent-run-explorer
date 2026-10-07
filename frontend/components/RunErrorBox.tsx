@@ -12,7 +12,7 @@ export default function RunErrorBox({ run }: { run: Run }) {
       className="flex flex-col gap-2 rounded-2xl border border-failed/30 bg-gradient-to-b from-failed/10 to-failed/[0.04] px-[22px] py-5"
     >
       <h2 id="run-error-title" className="text-sm font-normal text-[#f9a8d4]">
-        Error · <code className="font-mono">{error.type}</code>
+        Error · {error.type}
       </h2>
       <p className="text-[15px] break-words whitespace-pre-wrap text-[#fce7f3]">{error.message}</p>
       {failedStep ? (

@@ -5,12 +5,12 @@ import StepWaterfall from "@/components/StepWaterfall";
 import { formatDateTimeUtc } from "@/lib/format";
 import type { Run } from "@/lib/types";
 
-// big: the number is shown large and in monospace (duration, cost, tokens, steps).
+// big: the number is shown large (duration, cost, tokens, steps).
 function Field({ label, children, title, big = false }: { label: string; children: ReactNode; title?: string; big?: boolean }) {
   return (
     <div className="flex flex-col gap-1">
       <dt className="text-[11px] tracking-[0.1em] text-dim uppercase">{label}</dt>
-      <dd title={title} className={big ? "font-mono text-[22px]" : "text-sm"}>
+      <dd title={title} className={big ? "text-[22px] tabular-nums" : "text-sm"}>
         {children}
       </dd>
     </div>

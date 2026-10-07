@@ -37,9 +37,9 @@ function StepCard({ step, isFailing }: { step: Step; isFailing: boolean }) {
       />
       <div className={`flex flex-col gap-3.5 rounded-[14px] px-5 py-[18px] ${cardStyle} [li:target_&]:ring-2 [li:target_&]:ring-[#a78bfa]`}>
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="font-mono text-xs text-dim">Step {step.index}</span>
+          <span className="text-xs text-dim tabular-nums">Step {step.index}</span>
           <h3 className="text-[15px] font-semibold">{step.name}</h3>
-          <span className="rounded-md bg-white/[0.07] px-2 py-0.5 font-mono text-[11px] text-soft">{step.tool}</span>
+          <span className="rounded-md bg-white/[0.07] px-2 py-0.5 text-[11px] text-soft">{step.tool}</span>
           <StatusBadge status={step.status} size="sm" />
           {isFailing && (
             <span className="rounded-full bg-failed/25 px-[9px] py-0.5 text-[11px] text-[#fce7f3]">Failed here</span>
@@ -52,7 +52,7 @@ function StepCard({ step, isFailing }: { step: Step; isFailing: boolean }) {
           )}
           <span
             title={`Started ${formatTimeUtc(step.started_at)}`}
-            className="ml-auto font-mono text-xs text-muted"
+            className="ml-auto text-xs text-muted tabular-nums"
           >
             <StepTime step={step} /> · {step.tokens.input.toLocaleString("en-US")} in /{" "}
             {step.tokens.output.toLocaleString("en-US")} out

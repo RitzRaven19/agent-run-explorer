@@ -41,13 +41,13 @@ function RunRow({ run, filters, slowestMs }: { run: RunSummary; filters: RunFilt
         <StatusBadge status={run.status} />
       </td>
       <td className="px-3 py-3.5 whitespace-nowrap text-muted tabular-nums">{formatDateTimeUtc(run.started_at)}</td>
-      <td className="px-3 py-3.5 text-right font-mono text-[13px] whitespace-nowrap">
+      <td className="px-3 py-3.5 text-right text-[13px] whitespace-nowrap tabular-nums">
         <div className="flex flex-col items-end gap-[5px]">
           <DurationValue run={run} />
           <DurationBar run={run} slowestMs={slowestMs} />
         </div>
       </td>
-      <td className="px-3 py-3.5 text-right font-mono text-[13px] whitespace-nowrap">
+      <td className="px-3 py-3.5 text-right text-[13px] whitespace-nowrap tabular-nums">
         <CostValue costUsd={run.cost_usd} />
       </td>
       <td className="px-3 py-3.5 text-right text-muted tabular-nums">{run.step_count}</td>
