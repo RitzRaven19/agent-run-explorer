@@ -1,7 +1,7 @@
-from datetime import date, datetime, timezone
+from datetime import date, timezone
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import AwareDatetime, BaseModel, Field
 
 RunStatus = Literal["succeeded", "failed", "cancelled", "running"]
 AgentName = Literal[
@@ -27,7 +27,7 @@ class Step(BaseModel):
     name: str
     tool: ToolName
     status: RunStatus
-    started_at: datetime
+    started_at: AwareDatetime
     duration_ms: Number | None
     input: str
     output: str | None
@@ -47,8 +47,8 @@ class RunBase(BaseModel):
     agent: AgentName
     model: str
     status: RunStatus
-    started_at: datetime
-    ended_at: datetime | None
+    started_at: AwareDatetime
+    ended_at: AwareDatetime | None
     duration_ms: Number | None
     input_tokens: int
     output_tokens: int
