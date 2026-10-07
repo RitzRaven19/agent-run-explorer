@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ErrorPanel from "@/components/ErrorPanel";
+import RunErrorBox from "@/components/RunErrorBox";
 import RunHeader from "@/components/RunHeader";
 import RunWarnings from "@/components/RunWarnings";
+import StepsTimeline from "@/components/StepsTimeline";
 import { describeError, fetchRun } from "@/lib/api";
 import { backToRunsHref } from "@/lib/filters";
 import type { Run } from "@/lib/types";
@@ -46,6 +48,8 @@ export default async function RunPage({ params, searchParams }: PageProps<"/runs
       <BackLink href={backHref} />
       <RunHeader run={run} />
       <RunWarnings warnings={run.warnings} />
+      <RunErrorBox run={run} />
+      <StepsTimeline run={run} />
     </div>
   );
 }

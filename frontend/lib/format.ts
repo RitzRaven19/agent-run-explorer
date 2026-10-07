@@ -17,6 +17,13 @@ export function formatDateTimeUtc(iso: string): string {
   return `${day} ${month} ${date.getUTCFullYear()}, ${time} UTC`;
 }
 
+// Steps of one run usually start within the same minute, so their times need seconds.
+export function formatTimeUtc(iso: string): string {
+  const date = new Date(iso);
+  const parts = [date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()];
+  return `${parts.map(twoDigits).join(":")} UTC`;
+}
+
 export function formatDurationSeconds(durationMs: number): string {
   return `${(durationMs / 1000).toFixed(1)} s`;
 }
@@ -31,6 +38,18 @@ export function promptPreview(prompt: string): string {
   const oneLine = prompt.replace(/\s+/g, " ").trim();
   if (oneLine.length <= PROMPT_PREVIEW_LENGTH) return oneLine;
   return `${oneLine.slice(0, PROMPT_PREVIEW_LENGTH).trimEnd()}…`;
+}
+
+// Many step outputs are JSON written as text; indenting it makes nested fields readable.
+// Anything that is not valid JSON is returned exactly as it came, whitespace included.
+export function formatStepValue(text: string): string {
+  const trimmed = text.trim();
+  if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return text;
+  try {
+    return JSON.stringify(JSON.parse(trimmed), null, 2);
+  } catch {
+    return text;
+  }
 }
 
 // The backend keeps a negative duration as-is (run_0064) and warns about it, so the UI has to spot it.
