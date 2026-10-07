@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Environment files (the example file stays tracked)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Local-only files
+.claude/settings.local.json
+INTERVIEW_NOTES.md
