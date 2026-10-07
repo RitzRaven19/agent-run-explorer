@@ -1,3 +1,4 @@
+import ScrollToStep from "@/components/ScrollToStep";
 import StatusBadge from "@/components/StatusBadge";
 import StepValue from "@/components/StepValue";
 import { formatDurationSeconds, formatStepValue, formatTimeUtc, stepAnchorId } from "@/lib/format";
@@ -75,6 +76,7 @@ export default function StepsTimeline({ run }: { run: Run }) {
           ))}
         </ol>
       )}
+      <ScrollToStep />
     </section>
   );
 }
