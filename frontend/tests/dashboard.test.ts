@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   agentBarPercent,
+  agentCardLabel,
+  agentCostText,
   axisLabels,
   costBarPercent,
   costSummary,
@@ -130,6 +132,53 @@ describe("agent bars", () => {
     const quiet = agent("invoice-extractor", { total: 33 });
     expect(agentBarPercent(busy, [busy, quiet])).toBe(100);
     expect(agentBarPercent(quiet, [busy, quiet])).toBe(72);
+  });
+});
+
+describe("agent cards", () => {
+  it("prints a priced total with six decimals", () => {
+    expect(agentCostText(agent("kpi-analyst", { total_cost_usd: 0.4123451, priced_count: 38 }))).toBe("$0.412345");
+  });
+
+  it("keeps a real $0 from priced runs", () => {
+    expect(agentCostText(agent("kpi-analyst", { total_cost_usd: 0, priced_count: 2 }))).toBe("$0.000000");
+  });
+
+  it("never prints $0 when no run has a price", () => {
+    expect(agentCostText(agent("kpi-analyst", { total_cost_usd: 0, priced_count: 0, unpriced_count: 3 }))).toBe(
+      "No priced runs",
+    );
+  });
+
+  it("names everything on the card, including running and unpriced runs", () => {
+    const kpi = agent("kpi-analyst", {
+      total: 39,
+      succeeded: 28,
+      failed: 6,
+      cancelled: 0,
+      running: 5,
+      success_rate: 28 / 34,
+      total_cost_usd: 0.412345,
+      priced_count: 38,
+      unpriced_count: 1,
+    });
+    expect(agentCardLabel(kpi)).toBe(
+      "kpi-analyst: 39 runs, success rate 82.35%, 5 running. Cost $0.412345 (1 unpriced). Explore this agent's runs.",
+    );
+  });
+
+  it("leaves out running and unpriced when there are none", () => {
+    const drafter = agent("email-drafter", { total: 2, succeeded: 1, failed: 1, success_rate: 0.5, total_cost_usd: 0.01, priced_count: 2 });
+    expect(agentCardLabel(drafter)).toBe(
+      "email-drafter: 2 runs, success rate 50.00%. Cost $0.010000. Explore this agent's runs.",
+    );
+  });
+
+  it("says there is no rate yet when nothing has finished", () => {
+    const busy = agent("support-router", { total: 1, running: 1, unpriced_count: 1 });
+    expect(agentCardLabel(busy)).toBe(
+      "support-router: 1 run, no finished runs yet, 1 running. No priced runs (1 unpriced). Explore this agent's runs.",
+    );
   });
 });
 

@@ -1,4 +1,4 @@
-import { formatDayLabel, formatPercent, formatPricedTotal } from "@/lib/format";
+import { formatCost, formatDayLabel, formatPercent, formatPricedTotal } from "@/lib/format";
 import { STATUS_COLORS } from "@/lib/statusColors";
 import { RUN_STATUSES, type AgentStats, type DayCount, type RunStatus, type StatusCounts } from "@/lib/types";
 
@@ -137,6 +137,21 @@ export function statusSummary(agents: AgentStats[]): string {
 export function agentCostLabel(agent: AgentStats): string {
   const total = formatPricedTotal(agent.total_cost_usd, agent.unpriced_count);
   return `${agent.agent}: ${total}. ${agent.priced_count} priced runs, ${agent.unpriced_count} unpriced. Open this agent's runs.`;
+}
+
+// An agent whose every run is unpriced has a total of 0 from the backend; printing $0.000000 would claim it was free.
+// A real $0 (runs that failed before any model call) still prints, because those runs are priced.
+export function agentCostText(agent: AgentStats): string {
+  return agent.priced_count === 0 ? "No priced runs" : formatCost(agent.total_cost_usd);
+}
+
+// The whole agent card is one link, so this sentence is everything a screen reader hears for it.
+export function agentCardLabel(agent: AgentStats): string {
+  const rate = agent.success_rate === null ? "no finished runs yet" : `success rate ${formatPercent(agent.success_rate)}`;
+  const running = agent.running > 0 ? `, ${agent.running} running` : "";
+  const cost = agent.priced_count === 0 ? "No priced runs" : `Cost ${formatCost(agent.total_cost_usd)}`;
+  const unpriced = agent.unpriced_count > 0 ? ` (${agent.unpriced_count} unpriced)` : "";
+  return `${agent.agent}: ${runsLabel(agent.total)}, ${rate}${running}. ${cost}${unpriced}. Explore this agent's runs.`;
 }
 
 export function agentStatusLabel(agent: AgentStats): string {
