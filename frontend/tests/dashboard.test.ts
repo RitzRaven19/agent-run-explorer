@@ -7,6 +7,7 @@ import {
   costBarPercent,
   costSummary,
   dashboardEyebrow,
+  dayAxisTicks,
   dayBars,
   donutGradient,
   positionBetween,
@@ -92,6 +93,33 @@ describe("runs per day bars", () => {
     const bars = dayBars(days(["2026-08-10", 0], ["2026-08-11", 0]));
     expect(bars.map((bar) => bar.heightPx)).toEqual([0, 0]);
     expect(bars.some((bar) => bar.isPeak)).toBe(false);
+  });
+
+  it("scales bars to the y-axis, which rounds the busiest day up to a multiple of 5", () => {
+    // busiest is 7, so the axis tops out at 10 and 7 of 10 is 133 px
+    const bars = dayBars(days(["2026-08-10", 7], ["2026-08-11", 2]));
+    expect(bars.map((bar) => bar.heightPx)).toEqual([133, 38]);
+    expect(bars[0].isPeak).toBe(true);
+  });
+});
+
+describe("y-axis ticks", () => {
+  it("labels 0, 5 and 10 when the busiest day has 10 runs", () => {
+    const ticks = dayAxisTicks(days(["2026-08-10", 4], ["2026-08-11", 10]));
+    expect(ticks).toEqual([
+      { value: 0, heightPx: 0 },
+      { value: 5, heightPx: 95 },
+      { value: 10, heightPx: 190 },
+    ]);
+  });
+
+  it("rounds the top up to the next multiple of 5", () => {
+    expect(dayAxisTicks(days(["2026-08-10", 11])).map((tick) => tick.value)).toEqual([0, 5, 10, 15]);
+  });
+
+  it("always shows at least 0 and 5, even with no runs", () => {
+    expect(dayAxisTicks(days(["2026-08-10", 0])).map((tick) => tick.value)).toEqual([0, 5]);
+    expect(dayAxisTicks([]).map((tick) => tick.value)).toEqual([0, 5]);
   });
 });
 

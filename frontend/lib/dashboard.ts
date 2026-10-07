@@ -41,18 +41,38 @@ export function positionBetween(value: number | null, min: number | null | undef
   return Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
 }
 
-const TALLEST_DAY_BAR_PX = 190;
+const AXIS_STEP = 5;
+const AXIS_HEIGHT_PX = 190;
+
+function busiestCount(days: DayCount[]): number {
+  return days.reduce((most, day) => Math.max(most, day.count), 0);
+}
+
+// The top of the y-axis: the busiest day rounded up to a multiple of 5, and never below 5.
+function axisMax(days: DayCount[]): number {
+  return Math.max(AXIS_STEP, Math.ceil(busiestCount(days) / AXIS_STEP) * AXIS_STEP);
+}
+
+// y-axis labels 0, 5, 10, ... with the height each one sits at, so the grid lines match the bars.
+export function dayAxisTicks(days: DayCount[]): { value: number; heightPx: number }[] {
+  const max = axisMax(days);
+  return Array.from({ length: max / AXIS_STEP + 1 }, (_, position) => {
+    const value = position * AXIS_STEP;
+    return { value, heightPx: (value / max) * AXIS_HEIGHT_PX };
+  });
+}
 
 export type DayBar = { date: string; label: string; count: number; heightPx: number; isPeak: boolean };
 
-// One bar per day; the busiest day(s) are marked so the chart can light them up.
+// One bar per day, scaled to the y-axis; the busiest day(s) are marked so the chart can light them up.
 export function dayBars(days: DayCount[]): DayBar[] {
-  const busiest = days.reduce((most, day) => Math.max(most, day.count), 0);
+  const max = axisMax(days);
+  const busiest = busiestCount(days);
   return days.map((day) => ({
     date: day.date,
     label: formatDayLabel(day.date),
     count: day.count,
-    heightPx: busiest === 0 ? 0 : (day.count / busiest) * TALLEST_DAY_BAR_PX,
+    heightPx: (day.count / max) * AXIS_HEIGHT_PX,
     isPeak: busiest > 0 && day.count === busiest,
   }));
 }
