@@ -3,7 +3,7 @@ import ErrorPanel from "@/components/ErrorPanel";
 import { CostValue, DurationValue, WarningMark } from "@/components/RunValues";
 import StatusBadge from "@/components/StatusBadge";
 import { describeError, fetchRuns } from "@/lib/api";
-import { toSearchParams, type RunFilters } from "@/lib/filters";
+import { runDetailHref, runsListHref, type RunFilters } from "@/lib/filters";
 import { formatDateTimeUtc, promptPreview } from "@/lib/format";
 import type { RunListResponse, RunSummary } from "@/lib/types";
 
@@ -11,15 +11,14 @@ const LINK_STYLE = "rounded border border-slate-300 bg-white px-3 py-1 text-sm h
 const DISABLED_STYLE = "rounded border border-slate-200 px-3 py-1 text-sm text-slate-400";
 
 function runsHref(filters: RunFilters, page: number): string {
-  const query = toSearchParams({ ...filters, page }).toString();
-  return query ? `/runs?${query}` : "/runs";
+  return runsListHref({ ...filters, page });
 }
 
-function RunRow({ run }: { run: RunSummary }) {
+function RunRow({ run, filters }: { run: RunSummary; filters: RunFilters }) {
   return (
     <tr className="border-t border-slate-100 align-top">
       <td className="whitespace-nowrap px-3 py-2">
-        <Link href={`/runs/${run.id}`} className="font-mono text-blue-700 hover:underline">
+        <Link href={runDetailHref(run.id, filters)} className="font-mono text-blue-700 hover:underline">
           {run.id}
         </Link>{" "}
         {run.warnings.length > 0 && <WarningMark text={run.warnings.join("\n")} />}
@@ -130,7 +129,7 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
           </thead>
           <tbody>
             {items.map((run) => (
-              <RunRow key={run.id} run={run} />
+              <RunRow key={run.id} run={run} filters={filters} />
             ))}
           </tbody>
         </table>

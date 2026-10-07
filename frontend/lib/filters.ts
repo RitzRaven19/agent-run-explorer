@@ -117,3 +117,21 @@ export function toSearchParams(filters: RunFilters): URLSearchParams {
   if (filters.page_size !== DEFAULT_FILTERS.page_size) params.set("page_size", String(filters.page_size));
   return params;
 }
+
+export function runsListHref(filters: RunFilters): string {
+  const query = toSearchParams(filters).toString();
+  return query ? `/runs?${query}` : "/runs";
+}
+
+// The list's query string travels to the run page as ?from=, so "Back to runs" can restore the same view.
+export function runDetailHref(runId: string, filters: RunFilters): string {
+  const path = `/runs/${encodeURIComponent(runId)}`;
+  const listQuery = toSearchParams(filters).toString();
+  return listQuery ? `${path}?${new URLSearchParams({ from: listQuery })}` : path;
+}
+
+// ?from= comes from the URL, so anyone can put anything in it. It is parsed and rebuilt rather than used as-is:
+// only known filters survive and the link always points at /runs, so it can never send the user to another site.
+export function backToRunsHref(from: string | undefined): string {
+  return runsListHref(parseFilters(new URLSearchParams(from ?? "")));
+}
