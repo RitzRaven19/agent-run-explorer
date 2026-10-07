@@ -109,6 +109,12 @@ export type DayCount = {
   count: number;
 };
 
+export type HealthResponse = {
+  status: "ok";
+  run_count: number;
+  data_warnings: string[];
+};
+
 export type StatsResponse = {
   overall: StatusCounts;
   per_agent: AgentStats[];

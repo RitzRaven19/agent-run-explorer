@@ -1,5 +1,5 @@
 import { DEFAULT_FILTERS, toSearchParams, type RunFilters } from "@/lib/filters";
-import type { Run, RunListResponse, StatsResponse } from "@/lib/types";
+import type { HealthResponse, Run, RunListResponse, StatsResponse } from "@/lib/types";
 
 // API_URL is only set on the server; NEXT_PUBLIC_API_URL is the one a browser can see.
 export function apiBaseUrl(): string {
@@ -75,6 +75,10 @@ export async function fetchRun(id: string): Promise<Run | null> {
 // Called from the browser, so it resolves to NEXT_PUBLIC_API_URL there.
 export function explainUrl(runId: string): string {
   return `${apiBaseUrl()}/api/runs/${encodeURIComponent(runId)}/explain`;
+}
+
+export function fetchHealth(): Promise<HealthResponse> {
+  return getJson<HealthResponse>("/api/health");
 }
 
 // Stats take the same filters as the list, but sort and paging mean nothing to them, so those are reset.
