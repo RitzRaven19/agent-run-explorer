@@ -3,6 +3,7 @@ import { AGENT_NAMES } from "@/lib/types";
 import {
   DEFAULT_FILTERS,
   QUICK_PRESETS,
+  activeFilterCount,
   backToRunsHref,
   isPresetActive,
   parseFilters,
@@ -166,6 +167,24 @@ describe("quick investigations", () => {
 
   it("ignores params the page does not know", () => {
     expect(isPresetActive(failures, parseQuery("status=failed&utm_source=mail"))).toBe(true);
+  });
+});
+
+describe("active filter count", () => {
+  it("is 0 for the default view, whatever the page", () => {
+    expect(activeFilterCount(DEFAULT_FILTERS)).toBe(0);
+    expect(activeFilterCount({ ...DEFAULT_FILTERS, page: 3, page_size: 50 })).toBe(0);
+  });
+
+  it("counts every chosen chip, the search text, each date and a changed sort", () => {
+    const filters = parseQuery("status=failed&status=running&agent=kpi-analyst&tool=sql&q=refund&started_from=2026-08-01");
+    expect(activeFilterCount(filters)).toBe(6);
+    expect(activeFilterCount({ ...filters, started_to: "2026-08-31", sort: "cost_usd" })).toBe(8);
+  });
+
+  it("counts a sort direction change as one, even with the same sort field", () => {
+    expect(activeFilterCount({ ...DEFAULT_FILTERS, order: "asc" })).toBe(1);
+    expect(activeFilterCount({ ...DEFAULT_FILTERS, sort: "duration_ms", order: "asc" })).toBe(1);
   });
 });
 

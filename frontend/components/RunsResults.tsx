@@ -4,6 +4,7 @@ import ErrorPanel from "@/components/ErrorPanel";
 import KeyboardRows from "@/components/KeyboardRows";
 import RequestIndicator from "@/components/RequestIndicator";
 import { CostValue, DurationValue, WarningMark } from "@/components/RunValues";
+import ScrollableTable from "@/components/ScrollableTable";
 import StatusBadge from "@/components/StatusBadge";
 import { describeError, fetchRunsTimed, type TimedRuns } from "@/lib/api";
 import { slowestDurationMs } from "@/lib/durationBar";
@@ -153,7 +154,7 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
       </div>
       <KeyboardRows hintId="keyboard-hint">
         <div className="glass overflow-hidden rounded-2xl">
-          <div className="overflow-x-auto">
+          <ScrollableTable>
             <table className="w-full min-w-[980px] border-collapse text-left text-sm">
               <thead>
                 <tr className="bg-white/[0.025] text-[11px] tracking-[0.1em] text-muted uppercase">
@@ -178,7 +179,7 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollableTable>
         </div>
       </KeyboardRows>
       <div className="flex flex-wrap items-center justify-between gap-3">

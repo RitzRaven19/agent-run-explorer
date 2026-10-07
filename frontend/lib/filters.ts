@@ -148,6 +148,15 @@ export const QUICK_PRESETS: QuickPreset[] = [
   { label: "Running now", filters: { ...DEFAULT_FILTERS, status: ["running"] } },
 ];
 
+// How many controls in the filter panel differ from the defaults: every chosen chip, the search text, each date,
+// and one for a changed sort. This is the N in "Filters (N active)".
+export function activeFilterCount(filters: RunFilters): number {
+  const chips = filters.status.length + filters.agent.length + filters.tool.length;
+  const typed = [filters.q, filters.started_from, filters.started_to].filter((value) => value !== "").length;
+  const sortChanged = filters.sort !== DEFAULT_FILTERS.sort || filters.order !== DEFAULT_FILTERS.order;
+  return chips + typed + (sortChanged ? 1 : 0);
+}
+
 // Page is ignored so a preset stays highlighted while you page through its results.
 export function isPresetActive(preset: QuickPreset, current: RunFilters): boolean {
   return (
