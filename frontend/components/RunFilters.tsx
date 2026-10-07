@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { parseFilters, toSearchParams, type RunFilters as Filters } from "@/lib/filters";
-import { RUN_STATUSES, SORT_FIELDS, TOOL_NAMES, type AgentName, type SortField } from "@/lib/types";
+import { AGENT_NAMES, RUN_STATUSES, SORT_FIELDS, TOOL_NAMES, type SortField } from "@/lib/types";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -21,7 +21,7 @@ function toggled<T extends string>(selected: T[], value: T, order: readonly T[])
   return order.filter((item) => next.includes(item));
 }
 
-export default function RunFilters({ agents }: { agents: AgentName[] }) {
+export default function RunFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -89,12 +89,12 @@ export default function RunFilters({ agents }: { agents: AgentName[] }) {
         <fieldset>
           <legend className="mb-1 text-sm font-medium">Agent</legend>
           <div className="flex flex-wrap gap-3">
-            {agents.map((agent) => (
+            {AGENT_NAMES.map((agent) => (
               <label key={agent} className="flex items-center gap-1 text-sm">
                 <input
                   type="checkbox"
                   checked={filters.agent.includes(agent)}
-                  onChange={() => update({ agent: toggled(filters.agent, agent, agents) })}
+                  onChange={() => update({ agent: toggled(filters.agent, agent, AGENT_NAMES) })}
                 />
                 {agent}
               </label>

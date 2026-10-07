@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { AGENT_NAMES } from "@/lib/types";
 import {
   DEFAULT_FILTERS,
   backToRunsHref,
@@ -35,6 +36,20 @@ describe("parseFilters and toSearchParams", () => {
     expect(query).toContain("agent=email-drafter&agent=kpi-analyst");
     expect(query).toContain("tool=sql&tool=http");
     expect(parseQuery(query)).toEqual(filters);
+  });
+
+  it("round-trips every agent name, so the agent chips can never offer one the URL would drop", () => {
+    const query = toSearchParams({ ...DEFAULT_FILTERS, agent: [...AGENT_NAMES] }).toString();
+
+    expect(parseQuery(query).agent).toEqual([...AGENT_NAMES]);
+    // The names must match backend/app/models.py exactly; this is the list the backend accepts.
+    expect(AGENT_NAMES).toEqual([
+      "contract-reviewer",
+      "email-drafter",
+      "invoice-extractor",
+      "kpi-analyst",
+      "support-router",
+    ]);
   });
 
   it("reads the plain object that Next gives a page the same way as URLSearchParams", () => {
