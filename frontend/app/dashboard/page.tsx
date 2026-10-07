@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AgentCards from "@/components/AgentCards";
 import ChartSection from "@/components/ChartSection";
 import AgentCostChart from "@/components/charts/AgentCostChart";
 import AgentStatusChart from "@/components/charts/AgentStatusChart";
@@ -190,6 +191,7 @@ export default async function DashboardPage() {
         <OutcomeDonut counts={stats.overall} />
       </div>
       <StatTiles stats={stats} />
+      <AgentCards agents={stats.per_agent} />
       <ChartSection id="runs-per-day" title="Runs per day" summary={runsPerDaySummary(stats.runs_per_day)}>
         <RunsPerDayChart days={stats.runs_per_day} />
       </ChartSection>
