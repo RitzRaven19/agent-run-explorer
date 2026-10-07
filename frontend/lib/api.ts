@@ -52,6 +52,16 @@ export function fetchRuns(filters: RunFilters): Promise<RunListResponse> {
   return getJson<RunListResponse>(`/api/runs?${toSearchParams(filters)}`);
 }
 
+export type TimedRuns = { list: RunListResponse; durationMs: number; requestId: string };
+
+// The list plus how long the backend request took and a fresh id for it. Timed here because the Next.js server is
+// what calls the backend; the browser never sees that request. The id lets the browser-side counter tell requests apart.
+export async function fetchRunsTimed(filters: RunFilters): Promise<TimedRuns> {
+  const startedAt = performance.now();
+  const list = await fetchRuns(filters);
+  return { list, durationMs: performance.now() - startedAt, requestId: crypto.randomUUID() };
+}
+
 // Returns null for an unknown id so the page can call notFound().
 export async function fetchRun(id: string): Promise<Run | null> {
   const response = await request(`/api/runs/${encodeURIComponent(id)}`);

@@ -1,11 +1,12 @@
 import Link from "next/link";
 import ErrorPanel from "@/components/ErrorPanel";
+import RequestIndicator from "@/components/RequestIndicator";
 import { CostValue, DurationValue, WarningMark } from "@/components/RunValues";
 import StatusBadge from "@/components/StatusBadge";
-import { describeError, fetchRuns } from "@/lib/api";
+import { describeError, fetchRunsTimed, type TimedRuns } from "@/lib/api";
 import { runDetailHref, runsListHref, type RunFilters } from "@/lib/filters";
 import { formatDateTimeUtc, promptPreview } from "@/lib/format";
-import type { RunListResponse, RunSummary } from "@/lib/types";
+import type { RunSummary } from "@/lib/types";
 
 const LINK_STYLE = "rounded border border-slate-300 bg-white px-3 py-1 text-sm hover:bg-slate-100";
 const DISABLED_STYLE = "rounded border border-slate-200 px-3 py-1 text-sm text-slate-400";
@@ -72,21 +73,25 @@ function Pagination({ filters, lastPage }: { filters: RunFilters; lastPage: numb
 }
 
 export default async function RunsResults({ filters }: { filters: RunFilters }) {
-  let list: RunListResponse;
+  let result: TimedRuns;
   try {
-    list = await fetchRuns(filters);
+    result = await fetchRunsTimed(filters);
   } catch (error) {
     return <ErrorPanel message={describeError(error)} />;
   }
-  const { items, total, page, page_size } = list;
+  const indicator = <RequestIndicator requestId={result.requestId} durationMs={result.durationMs} />;
+  const { items, total, page, page_size } = result.list;
 
   if (total === 0) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white p-8 text-center">
-        <p className="font-medium">No runs match these filters</p>
-        <Link href="/runs" className="mt-2 inline-block text-sm text-blue-700 hover:underline">
-          Clear filters
-        </Link>
+      <div>
+        <div className="rounded-lg border border-slate-200 bg-white p-8 text-center">
+          <p className="font-medium">No runs match these filters</p>
+          <Link href="/runs" className="mt-2 inline-block text-sm text-blue-700 hover:underline">
+            Clear filters
+          </Link>
+        </div>
+        {indicator}
       </div>
     );
   }
@@ -96,11 +101,14 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
   // A hand-typed ?page=99 is past the end: say so instead of printing "Showing 2451–… of 200".
   if (page > lastPage) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white p-8 text-center">
-        <p className="font-medium">This page is beyond the results</p>
-        <Link href={runsHref(filters, 1)} className="mt-2 inline-block text-sm text-blue-700 hover:underline">
-          Go to page 1
-        </Link>
+      <div>
+        <div className="rounded-lg border border-slate-200 bg-white p-8 text-center">
+          <p className="font-medium">This page is beyond the results</p>
+          <Link href={runsHref(filters, 1)} className="mt-2 inline-block text-sm text-blue-700 hover:underline">
+            Go to page 1
+          </Link>
+        </div>
+        {indicator}
       </div>
     );
   }
@@ -135,6 +143,7 @@ export default async function RunsResults({ filters }: { filters: RunFilters }) 
         </table>
       </div>
       <Pagination filters={filters} lastPage={lastPage} />
+      {indicator}
     </div>
   );
 }
