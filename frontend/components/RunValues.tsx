@@ -5,17 +5,17 @@ import type { RunBase } from "@/lib/types";
 
 export function WarningMark({ text }: { text: string }) {
   return (
-    <span title={text} aria-label={`Warning: ${text}`} className="cursor-help text-amber-600">
+    <span title={text} aria-label={`Warning: ${text}`} className="cursor-help text-warn">
       ⚠
     </span>
   );
 }
 
 export function DurationValue({ run }: { run: Pick<RunBase, "status" | "duration_ms"> }) {
-  if (run.status === "running") return <span className="text-blue-700">running</span>;
+  if (run.status === "running") return <span className="text-running">running</span>;
   if (hasInvalidDuration(run)) {
     return (
-      <span>
+      <span className="text-warn">
         — <WarningMark text="Invalid duration: the run ended before it started" />
       </span>
     );
@@ -26,7 +26,11 @@ export function DurationValue({ run }: { run: Pick<RunBase, "status" | "duration
 
 export function CostValue({ costUsd }: { costUsd: number | null }) {
   if (costUsd === null) {
-    return <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">unpriced</span>;
+    return (
+      <span className="rounded-full border border-warn/25 bg-warn/12 px-2 py-[3px] font-sans text-[11px] text-warn">
+        unpriced
+      </span>
+    );
   }
   return <span>{formatCost(costUsd)}</span>;
 }

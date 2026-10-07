@@ -2,6 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { STATUS_COLORS } from "@/lib/statusColors";
+import type { FilterCounts } from "@/lib/filterCounts";
 import { parseFilters, toSearchParams, type RunFilters as Filters } from "@/lib/filters";
 import { AGENT_NAMES, RUN_STATUSES, SORT_FIELDS, TOOL_NAMES, type SortField } from "@/lib/types";
 
@@ -13,15 +15,19 @@ const SORT_LABELS: Record<SortField, string> = {
   cost_usd: "Cost",
 };
 
-const INPUT_STYLE = "rounded border border-slate-300 bg-white px-2 py-1 text-sm";
-
 // Adds or removes one value, keeping the list in the same order as `order` so the URL is always written the same way.
 function toggled<T extends string>(selected: T[], value: T, order: readonly T[]): T[] {
   const next = selected.includes(value) ? selected.filter((item) => item !== value) : [...selected, value];
   return order.filter((item) => next.includes(item));
 }
 
-export default function RunFilters() {
+function ChipCount({ count }: { count: number | undefined }) {
+  if (count === undefined) return null;
+  return <span className="font-mono text-[11px] text-dim">{count}</span>;
+}
+
+// counts is null when the backend could not be asked; the chips then show no numbers.
+export default function RunFilters({ counts }: { counts: FilterCounts | null }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -68,102 +74,73 @@ export default function RunFilters() {
   }
 
   return (
-    <section aria-label="Filters" className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
-      <div className="flex flex-wrap gap-x-8 gap-y-4">
-        <fieldset>
-          <legend className="mb-1 text-sm font-medium">Status</legend>
-          <div className="flex flex-wrap gap-3">
-            {RUN_STATUSES.map((status) => (
-              <label key={status} className="flex items-center gap-1 text-sm">
-                <input
-                  type="checkbox"
-                  checked={filters.status.includes(status)}
-                  onChange={() => update({ status: toggled(filters.status, status, RUN_STATUSES) })}
-                />
-                {status}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend className="mb-1 text-sm font-medium">Agent</legend>
-          <div className="flex flex-wrap gap-3">
-            {AGENT_NAMES.map((agent) => (
-              <label key={agent} className="flex items-center gap-1 text-sm">
-                <input
-                  type="checkbox"
-                  checked={filters.agent.includes(agent)}
-                  onChange={() => update({ agent: toggled(filters.agent, agent, AGENT_NAMES) })}
-                />
-                {agent}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend className="mb-1 text-sm font-medium">Tool used in any step</legend>
+    <section aria-label="Filters" className="glass flex flex-col gap-[18px] rounded-2xl p-5">
+      <div className="flex flex-wrap gap-7">
+        <fieldset className="m-0 flex flex-col gap-2.5 border-0 p-0">
+          <legend className="mb-2.5 text-xs tracking-[0.1em] text-muted uppercase">Status</legend>
           <div className="flex flex-wrap gap-2">
-            {TOOL_NAMES.map((tool) => {
-              const isSelected = filters.tool.includes(tool);
-              return (
-                <button
-                  key={tool}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => update({ tool: toggled(filters.tool, tool, TOOL_NAMES) })}
-                  className={`rounded-full border px-3 py-0.5 font-mono text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${
-                    isSelected
-                      ? "border-slate-900 bg-slate-900 text-white"
-                      : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
-                  }`}
-                >
-                  {tool}
-                </button>
-              );
-            })}
+            {RUN_STATUSES.map((status) => (
+              <button
+                key={status}
+                type="button"
+                className="chip"
+                aria-pressed={filters.status.includes(status)}
+                onClick={() => update({ status: toggled(filters.status, status, RUN_STATUSES) })}
+              >
+                <span aria-hidden="true" className="h-[7px] w-[7px] rounded-full" style={{ background: STATUS_COLORS[status] }} />
+                {status}
+                <ChipCount count={counts?.status[status]} />
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="m-0 flex flex-col gap-2.5 border-0 p-0">
+          <legend className="mb-2.5 text-xs tracking-[0.1em] text-muted uppercase">Agent</legend>
+          <div className="flex flex-wrap gap-2">
+            {AGENT_NAMES.map((agent) => (
+              <button
+                key={agent}
+                type="button"
+                className="chip"
+                aria-pressed={filters.agent.includes(agent)}
+                onClick={() => update({ agent: toggled(filters.agent, agent, AGENT_NAMES) })}
+              >
+                {agent}
+                <ChipCount count={counts?.agent[agent]} />
+              </button>
+            ))}
+          </div>
+        </fieldset>
+
+        <fieldset className="m-0 flex flex-col gap-2.5 border-0 p-0">
+          <legend className="mb-2.5 text-xs tracking-[0.1em] text-muted uppercase">Tool used in any step</legend>
+          <div className="flex flex-wrap gap-2">
+            {TOOL_NAMES.map((tool) => (
+              <button
+                key={tool}
+                type="button"
+                className="chip font-mono text-xs"
+                aria-pressed={filters.tool.includes(tool)}
+                onClick={() => update({ tool: toggled(filters.tool, tool, TOOL_NAMES) })}
+              >
+                {tool}
+              </button>
+            ))}
           </div>
         </fieldset>
       </div>
 
-      <div className="flex flex-wrap items-end gap-4">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="started-from" className="text-sm font-medium">
-            Started from
-          </label>
-          <input
-            id="started-from"
-            type="date"
-            className={INPUT_STYLE}
-            value={filters.started_from}
-            max={filters.started_to || undefined}
-            onChange={(event) => update({ started_from: event.target.value })}
-          />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label htmlFor="started-to" className="text-sm font-medium">
-            Started to
-          </label>
-          <input
-            id="started-to"
-            type="date"
-            className={INPUT_STYLE}
-            value={filters.started_to}
-            min={filters.started_from || undefined}
-            onChange={(event) => update({ started_to: event.target.value })}
-          />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <label htmlFor="search" className="text-sm font-medium">
+      <div className="flex flex-wrap items-end gap-3.5">
+        <div className="flex flex-[1_1_260px] flex-col gap-1.5">
+          <label htmlFor="search" className="text-xs text-muted">
             Search prompts
           </label>
           <input
             id="search"
             type="search"
-            className={INPUT_STYLE}
+            placeholder="e.g. apology"
+            className="field"
             value={typedQuery}
             onChange={(event) => setTypedQuery(event.target.value)}
             onFocus={() => setIsSearchFocused(true)}
@@ -171,14 +148,42 @@ export default function RunFilters() {
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <label htmlFor="sort" className="text-sm font-medium">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="started-from" className="text-xs text-muted">
+            Started from
+          </label>
+          <input
+            id="started-from"
+            type="date"
+            className="field"
+            value={filters.started_from}
+            max={filters.started_to || undefined}
+            onChange={(event) => update({ started_from: event.target.value })}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="started-to" className="text-xs text-muted">
+            Started to
+          </label>
+          <input
+            id="started-to"
+            type="date"
+            className="field"
+            value={filters.started_to}
+            min={filters.started_from || undefined}
+            onChange={(event) => update({ started_to: event.target.value })}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="sort" className="text-xs text-muted">
             Sort by
           </label>
           <div className="flex gap-2">
             <select
               id="sort"
-              className={INPUT_STYLE}
+              className="field"
               value={filters.sort}
               onChange={(event) => update({ sort: event.target.value as SortField })}
             >
@@ -188,21 +193,17 @@ export default function RunFilters() {
                 </option>
               ))}
             </select>
-            <button
-              type="button"
-              className={`${INPUT_STYLE} hover:bg-slate-100`}
-              onClick={() => update({ order: filters.order === "desc" ? "asc" : "desc" })}
-            >
+            <button type="button" className="outline-button" onClick={() => update({ order: filters.order === "desc" ? "asc" : "desc" })}>
               {filters.order === "desc" ? "Descending ↓" : "Ascending ↑"}
             </button>
           </div>
         </div>
 
-        <button type="button" className={`${INPUT_STYLE} hover:bg-slate-100`} onClick={clearFilters}>
+        <button type="button" className="outline-button" onClick={clearFilters}>
           Clear filters
         </button>
 
-        <span aria-live="polite" className="text-sm text-slate-500">
+        <span aria-live="polite" className="text-sm text-dim">
           {isPending ? "Updating…" : ""}
         </span>
       </div>

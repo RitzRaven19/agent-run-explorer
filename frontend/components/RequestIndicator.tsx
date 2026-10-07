@@ -11,7 +11,7 @@ export default function RequestIndicator({ requestId, durationMs }: { requestId:
   const requestCount = useSyncExternalStore(subscribeToRequests, getRequestCount, () => 0);
 
   return (
-    <p className="mt-2 text-xs text-slate-500">
+    <p className="font-mono text-xs text-dim">
       List request: {Math.round(durationMs)} ms
       {requestCount > 0 && ` · ${requestCount} ${requestCount === 1 ? "request" : "requests"} this session`}
     </p>
