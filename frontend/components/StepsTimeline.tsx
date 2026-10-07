@@ -43,14 +43,14 @@ function StepCard({ step, isFailing }: { step: Step; isFailing: boolean }) {
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         <div>
           <h4 className="mb-1 text-xs uppercase text-slate-500">Input</h4>
-          <StepValue text={formatStepValue(step.input)} />
+          <StepValue text={formatStepValue(step.input)} anchorId={stepAnchorId(step.index)} />
         </div>
         <div>
           <h4 className="mb-1 text-xs uppercase text-slate-500">Output</h4>
           {step.output === null ? (
             <p className="text-xs italic text-slate-500">no output</p>
           ) : (
-            <StepValue text={formatStepValue(step.output)} />
+            <StepValue text={formatStepValue(step.output)} anchorId={stepAnchorId(step.index)} />
           )}
         </div>
       </div>

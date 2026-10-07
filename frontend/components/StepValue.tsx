@@ -1,12 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useLocationHash } from "@/lib/useLocationHash";
 
 const COLLAPSED_LINES = 10;
 
 // A step's input or output, collapsed to its first lines when it is long.
-export default function StepValue({ text }: { text: string }) {
+// When the URL points at the step (#anchorId) it opens expanded, so a deep link shows the whole value.
+export default function StepValue({ text, anchorId }: { text: string; anchorId: string }) {
+  const isTargeted = useLocationHash() === `#${anchorId}`;
   const [isExpanded, setIsExpanded] = useState(false);
+  const [wasTargeted, setWasTargeted] = useState(false);
+
+  // Expand only at the moment the URL starts pointing here, so "Show less" still works afterwards.
+  if (isTargeted !== wasTargeted) {
+    setWasTargeted(isTargeted);
+    if (isTargeted) {
+      setIsExpanded(true);
+    }
+  }
+
   const lines = text.split("\n");
   const isLong = lines.length > COLLAPSED_LINES;
   const shownText = isLong && !isExpanded ? lines.slice(0, COLLAPSED_LINES).join("\n") : text;
