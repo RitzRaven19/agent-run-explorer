@@ -50,19 +50,20 @@
     mask-image: radial-gradient(ellipse 80% 60% at 50% 20%, #000 30%, transparent 85%);
   }
 
-  /* The glowing arc across the top of every page. */
+  /* The glowing arc across the top of every page. Its lowest point (top + height = 60px) sits just under the
+     header, so the bright line never crosses page content; only the soft glow reaches below it. */
   .horizon {
     position: absolute;
     left: 50%;
-    top: -1180px;
+    top: -1440px;
     width: 2600px;
     height: 1500px;
     transform: translateX(-50%);
     border-radius: 50%;
     box-shadow:
-      0 0 140px 30px rgba(124, 58, 237, 0.38),
-      inset 0 -50px 100px rgba(167, 139, 250, 0.28);
-    border-bottom: 1px solid rgba(196, 181, 253, 0.7);
+      0 0 120px 20px rgba(124, 58, 237, 0.3),
+      inset 0 -50px 100px rgba(167, 139, 250, 0.22);
+    border-bottom: 1px solid rgba(196, 181, 253, 0.55);
     pointer-events: none;
   }
 
