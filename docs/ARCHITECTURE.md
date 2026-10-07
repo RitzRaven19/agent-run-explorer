@@ -26,10 +26,10 @@ flowchart LR
 
 ### Request flows
 
-- **List page.** The browser asks Next.js for `/runs?status=failed&tool=sql`. The page parses the URL into a typed filter object (`parseFilters`), renders the filter bar, and wraps the results in `Suspense` so a skeleton shows while the server calls `GET /api/runs` on Render. The URL is the only place filter state lives, so a view can be copied and reopened.
+- **List page.** The browser asks Next.js for `/runs?status=failed&tool=sql`. The page parses the URL into a typed filter object (`parseFilters`), renders the filter bar, and wraps the results in `Suspense` so a skeleton shows while the server calls `GET /api/runs` on Render. The URL is the only place filter state lives, so a view can be copied and reopened. The numbers on the status and agent chips are whole-dataset counts from the unfiltered stats, kept for a few minutes by `lib/globalStats.ts` (a `use cache` function), so a filter change still costs one backend call.
 - **Detail page.** `/runs/[id]` fetches `GET /api/runs/{id}`. A 404 from the API becomes Next's not-found page. The "Back to runs" link comes from `?from=`, which is parsed and rebuilt before use.
 - **Explain.** The browser calls `POST /api/runs/{id}/explain` on Render directly, not through Next.js, because an extra server hop can buffer the text and defeat streaming. That is why the backend needs a CORS allow-list.
-- **Dashboard.** A server component calls `GET /api/stats` with no filters and passes plain data to the Recharts client components.
+- **Dashboard.** A server component calls `GET /api/stats` with no filters and renders the stat tiles, the outcome donut and the three charts, all plain HTML and CSS with no chart library.
 
 ### Deployment
 
@@ -48,7 +48,7 @@ Render checks out the whole repo (the dataset lives at the root) and starts `uvi
 
 ### Frontend (`frontend/`)
 
-- **Server vs client components.** Pages and `RunsResults` are server components: they fetch data and render HTML. Client components are only the parts that need the browser: `RunFilters` (router, debounce), `ExplainRun` (streaming), `StepValue` (expand/collapse), `KeyboardRows`, `RequestIndicator` and the charts.
+- **Server vs client components.** Pages and `RunsResults` are server components: they fetch data and render HTML. Client components are only the parts that need the browser: `RunFilters` (router, debounce), `ExplainRun` (streaming), `StepValue` (expand/collapse), `KeyboardRows`, `RequestIndicator`, `ScrollToStep` and `NavLinks`. The charts are server components.
 - **`lib/filters.ts`**: the URL-state module. `parseFilters` turns any URL into a valid `RunFilters` (unknown values dropped, fixed order, dates checked), and `toSearchParams` writes only non-default values. It also builds the list, detail and back links, including `backToRunsHref`, which re-parses `?from=`.
 - **`lib/api.ts`**: the only place that calls the backend. `fetchRuns`, `fetchRun` and `fetchStats` use `cache: "no-store"`; `fetchRunsTimed` adds the elapsed time and a request id.
 - **Request counter.** `lib/requestCounter.ts` keeps a module-level `Set` of request ids; `RequestIndicator` records its id and reads the count with `useSyncExternalStore`. Counting distinct ids means React re-running an effect, or Back showing an old result, does not inflate it.
