@@ -1,40 +1,37 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from "recharts";
-import { STATUS_COLORS } from "@/components/charts/colors";
+import Link from "next/link";
+import { agentBarPercent, agentStatusLabel, statusSegments } from "@/lib/dashboard";
 import { runsForAgentHref } from "@/lib/filters";
-import { formatPercent } from "@/lib/format";
+import { STATUS_BAR_COLORS } from "@/lib/statusColors";
 import { RUN_STATUSES, type AgentStats } from "@/lib/types";
 
+// One stacked bar per agent: succeeded, failed, cancelled and running as shares of that agent's runs.
 export default function AgentStatusChart({ agents }: { agents: AgentStats[] }) {
-  const router = useRouter();
-
-  function tooltipTitle(agentName: string): string {
-    const agent = agents.find((item) => item.agent === agentName);
-    return agent ? `${agentName} · success rate ${formatPercent(agent.success_rate)}` : agentName;
-  }
-
   return (
-    // Horizontal, like the cost chart, so every agent name fits on the left even on a phone.
-    <BarChart responsive layout="vertical" data={agents} style={{ width: "100%", height: 260 }}>
-      <CartesianGrid horizontal={false} stroke="#e2e8f0" />
-      <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
-      <YAxis type="category" dataKey="agent" width={110} tick={{ fontSize: 12 }} />
-      <Tooltip labelFormatter={(label) => tooltipTitle(String(label))} />
-      <Legend />
-      {/* One bar per status, stacked into a single column per agent. */}
-      {RUN_STATUSES.map((status) => (
-        <Bar
-          key={status}
-          dataKey={status}
-          name={status}
-          stackId="status"
-          fill={STATUS_COLORS[status]}
-          cursor="pointer"
-          onClick={(_bar, index) => router.push(runsForAgentHref(agents[index].agent))}
-        />
+    <>
+      {agents.map((agent) => (
+        <Link
+          key={agent.agent}
+          href={runsForAgentHref(agent.agent)}
+          title={agentStatusLabel(agent)}
+          aria-label={agentStatusLabel(agent)}
+          className="grid grid-cols-[130px_minmax(0,1fr)] items-center gap-3"
+        >
+          <span className="text-right text-[13px] text-soft">{agent.agent}</span>
+          <span className="flex h-[18px] overflow-hidden rounded-md" style={{ width: `${agentBarPercent(agent, agents)}%` }}>
+            {statusSegments(agent).map(({ status, percent }) => (
+              <span key={status} className="bar block h-full" style={{ width: `${percent}%`, background: STATUS_BAR_COLORS[status] }} />
+            ))}
+          </span>
+        </Link>
       ))}
-    </BarChart>
+      <div className="flex flex-wrap gap-4 pl-[142px] text-xs text-muted">
+        {RUN_STATUSES.map((status) => (
+          <span key={status} className="flex items-center gap-1.5">
+            <span aria-hidden="true" className="h-2.5 w-2.5 rounded-[3px]" style={{ background: STATUS_BAR_COLORS[status] }} />
+            {status}
+          </span>
+        ))}
+      </div>
+    </>
   );
 }

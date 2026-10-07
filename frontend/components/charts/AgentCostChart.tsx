@@ -1,36 +1,38 @@
-"use client";
-
-import { useRouter } from "next/navigation";
-import { Bar, BarChart, LabelList, Tooltip, XAxis, YAxis } from "recharts";
-import { VOLUME_COLOR } from "@/components/charts/colors";
+import Link from "next/link";
+import { agentCostLabel, costBarPercent } from "@/lib/dashboard";
 import { runsForAgentHref } from "@/lib/filters";
-import { formatCost, formatPricedTotal } from "@/lib/format";
+import { formatPricedTotal } from "@/lib/format";
 import type { AgentStats } from "@/lib/types";
 
-// Horizontal bars: agent names fit on the left even on a phone, and each label has room at the bar's end.
+// Horizontal bars: the agent name on the left, the bar, then the priced total (with its unpriced count) at the bar's end.
 export default function AgentCostChart({ agents }: { agents: AgentStats[] }) {
-  const router = useRouter();
-  const data = agents.map((agent) => ({
-    agent: agent.agent,
-    cost: agent.total_cost_usd,
-    label: formatPricedTotal(agent.total_cost_usd, agent.unpriced_count),
-  }));
+  const highestCost = agents.reduce((highest, agent) => Math.max(highest, agent.total_cost_usd), 0);
 
   return (
-    <BarChart responsive layout="vertical" data={data} style={{ width: "100%", height: 260 }}>
-      {/* The axis runs to 1.6 × the largest cost, so the longest bar leaves space for its label. */}
-      <XAxis type="number" hide domain={[0, (dataMax: number) => dataMax * 1.6]} />
-      <YAxis type="category" dataKey="agent" width={110} tick={{ fontSize: 12 }} />
-      <Tooltip formatter={(value) => formatCost(Number(value))} />
-      <Bar
-        dataKey="cost"
-        name="Priced cost"
-        fill={VOLUME_COLOR}
-        cursor="pointer"
-        onClick={(_bar, index) => router.push(runsForAgentHref(data[index].agent))}
-      >
-        <LabelList dataKey="label" position="right" fontSize={12} fill="#334155" />
-      </Bar>
-    </BarChart>
+    <>
+      {agents.map((agent) => (
+        <Link
+          key={agent.agent}
+          href={runsForAgentHref(agent.agent)}
+          aria-label={agentCostLabel(agent)}
+          className="grid grid-cols-[130px_minmax(0,1fr)] items-center gap-3"
+        >
+          <span className="text-right text-[13px] text-soft">{agent.agent}</span>
+          <span className="flex min-w-0 items-center gap-2.5">
+            <span
+              className="bar block h-[22px] rounded-md"
+              style={{
+                width: `${costBarPercent(agent.total_cost_usd, highestCost)}%`,
+                background: "linear-gradient(90deg, rgba(76,29,149,0.5), #a78bfa)",
+                boxShadow: "0 0 18px rgba(139,92,246,0.35)",
+              }}
+            />
+            <span className="font-mono text-xs whitespace-nowrap text-ink">
+              {formatPricedTotal(agent.total_cost_usd, agent.unpriced_count)}
+            </span>
+          </span>
+        </Link>
+      ))}
+    </>
   );
 }

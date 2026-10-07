@@ -1,14 +1,14 @@
 export default function DashboardLoading() {
   return (
-    <div role="status" aria-label="Loading dashboard" className="animate-pulse space-y-6">
-      <div className="h-8 w-40 rounded bg-slate-200" />
+    <div role="status" aria-label="Loading dashboard" className="flex animate-pulse flex-col gap-6 pt-12 pb-[72px]">
+      <div className="h-24 w-72 rounded bg-white/10" />
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
         {Array.from({ length: 5 }, (_, index) => (
-          <div key={index} className="h-24 rounded-lg border border-slate-200 bg-white" />
+          <div key={index} className="glass h-32 rounded-2xl" />
         ))}
       </div>
-      {Array.from({ length: 3 }, (_, index) => (
-        <div key={index} className="h-80 rounded-lg border border-slate-200 bg-white" />
+      {Array.from({ length: 2 }, (_, index) => (
+        <div key={index} className="glass h-64 rounded-[18px]" />
       ))}
     </div>
   );

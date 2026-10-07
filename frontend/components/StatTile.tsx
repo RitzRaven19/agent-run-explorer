@@ -3,25 +3,25 @@ import type { ReactNode } from "react";
 type StatTileProps = {
   label: string;
   value: string;
-  // Shown right next to the value, for something that must not be missed (e.g. unpriced runs).
-  aside?: ReactNode;
   // Small text under the value saying what the number does and does not include.
-  note: string;
-  // Hover text on the value, for the exact formula.
+  note?: string;
+  // Hover text for the whole tile, for the exact formula.
   title?: string;
+  // The cost tile shows a long figure, so it is smaller and monospaced.
+  isMono?: boolean;
+  // A thin bar or a badge under the value.
+  children?: ReactNode;
 };
 
-export default function StatTile({ label, value, aside, note, title }: StatTileProps) {
+export default function StatTile({ label, value, note, title, isMono = false, children }: StatTileProps) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <p className="text-sm text-slate-600">{label}</p>
-      <p className="mt-1 flex flex-wrap items-baseline gap-2">
-        <span title={title} className={`text-2xl font-semibold ${title ? "cursor-help" : ""}`}>
-          {value}
-        </span>
-        {aside}
-      </p>
-      <p className="mt-1 text-xs text-slate-500">{note}</p>
+    <div title={title} className="glass tile flex flex-col gap-2 rounded-2xl p-5">
+      <span className="text-xs text-muted">{label}</span>
+      <span className={`font-semibold tracking-[-0.02em] tabular-nums ${isMono ? "font-mono text-[30px]" : "text-4xl"}`}>
+        {value}
+      </span>
+      {note && <span className="text-xs text-dim">{note}</span>}
+      {children}
     </div>
   );
 }

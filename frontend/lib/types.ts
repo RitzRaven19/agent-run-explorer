@@ -98,6 +98,9 @@ export type AgentStats = StatusCounts & {
 export type DurationStats = {
   median_ms: number | null;
   p95_ms: number | null;
+  // The fastest and slowest of the same runs; they place the median and p95 on the dashboard's tile bars.
+  min_ms: number | null;
+  max_ms: number | null;
   completed_count: number;
 };
 

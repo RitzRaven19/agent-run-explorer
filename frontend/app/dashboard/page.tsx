@@ -5,206 +5,142 @@ import AgentCostChart from "@/components/charts/AgentCostChart";
 import AgentStatusChart from "@/components/charts/AgentStatusChart";
 import RunsPerDayChart from "@/components/charts/RunsPerDayChart";
 import ErrorPanel from "@/components/ErrorPanel";
+import OutcomeDonut from "@/components/OutcomeDonut";
+import PageHeading from "@/components/PageHeading";
 import StatTile from "@/components/StatTile";
 import { describeError, fetchStats } from "@/lib/api";
-import { runsForAgentHref, runsForDayHref } from "@/lib/filters";
-import { formatCost, formatDayLabel, formatDurationSeconds, formatPercent, formatPricedTotal } from "@/lib/format";
-import type { AgentStats, DayCount, StatsResponse } from "@/lib/types";
+import {
+  costSummary,
+  dashboardEyebrow,
+  finishedCount,
+  positionBetween,
+  runsPerDaySummary,
+  splitWarning,
+  statusShares,
+  statusSummary,
+} from "@/lib/dashboard";
+import { DEFAULT_FILTERS, runDetailHref } from "@/lib/filters";
+import { formatCost, formatDurationSeconds, formatPercent } from "@/lib/format";
+import { STATUS_COLORS } from "@/lib/statusColors";
+import type { StatsResponse } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Dashboard · Agent Run Explorer",
 };
 
 const SUCCESS_RATE_FORMULA = "succeeded ÷ (succeeded + failed + cancelled)";
+const TILE_TRACK = "relative mt-1 h-[5px] rounded bg-white/[0.07]";
 
 function durationText(durationMs: number | null): string {
   return durationMs === null ? "—" : formatDurationSeconds(durationMs);
 }
 
+// A thin bar under the median or p95 figure: the filled part runs to the value, a white tick marks it.
+// Nothing is drawn when the value cannot be placed between the fastest and slowest run.
+function PositionBar({ percent, title }: { percent: number | null; title: string }) {
+  if (percent === null) return null;
+  return (
+    <span title={title} className={TILE_TRACK}>
+      <span
+        className="absolute top-0 bottom-0 left-0 rounded"
+        style={{ width: `${percent}%`, background: "linear-gradient(90deg, #4c1d95, #a78bfa)" }}
+      />
+      <span className="absolute -top-[3px] h-[11px] w-0.5 bg-white" style={{ left: `${percent}%` }} />
+    </span>
+  );
+}
+
 function StatTiles({ stats }: { stats: StatsResponse }) {
   const { overall, duration, per_agent } = stats;
+  const finished = finishedCount(overall);
   // Every run belongs to exactly one agent, so adding up the agents gives the overall total.
   const pricedTotal = per_agent.reduce((sum, agent) => sum + agent.total_cost_usd, 0);
   const unpricedCount = per_agent.reduce((sum, agent) => sum + agent.unpriced_count, 0);
-  const durationNote = `${duration.completed_count} completed runs; excludes running and invalid durations`;
+  const range =
+    typeof duration.min_ms === "number" && typeof duration.max_ms === "number"
+      ? `the fastest (${formatDurationSeconds(duration.min_ms)}) and slowest (${formatDurationSeconds(duration.max_ms)}) run`
+      : "the fastest and slowest run";
 
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+    <section aria-label="Key numbers" className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
       <StatTile
         label="Total runs"
         value={String(overall.total)}
         note={`${overall.succeeded} succeeded · ${overall.failed} failed · ${overall.cancelled} cancelled · ${overall.running} running`}
-      />
+      >
+        <span title="Share of runs by status" className="mt-1 flex h-[5px] overflow-hidden rounded">
+          {statusShares(overall).map(({ status, percent }) => (
+            <span key={status} style={{ width: `${percent}%`, background: STATUS_COLORS[status] }} />
+          ))}
+        </span>
+      </StatTile>
       <StatTile
         label="Success rate"
         value={formatPercent(overall.success_rate)}
-        title={`${SUCCESS_RATE_FORMULA}. Running runs have not finished, so they are left out.`}
-        note={`${SUCCESS_RATE_FORMULA}; ${overall.running} running runs excluded`}
-      />
-      <StatTile label="Median duration" value={durationText(duration.median_ms)} note={durationNote} />
-      <StatTile label="p95 duration" value={durationText(duration.p95_ms)} note={durationNote} />
+        title={`${SUCCESS_RATE_FORMULA} = ${overall.succeeded} ÷ ${finished}`}
+        note={`${overall.succeeded} ÷ ${finished} finished runs; ${overall.running} running excluded`}
+      >
+        <span title={`${formatPercent(overall.success_rate)} succeeded of finished runs`} className="mt-1 h-[5px] overflow-hidden rounded bg-failed/35">
+          <span className="block h-full bg-succeeded" style={{ width: `${(overall.success_rate ?? 0) * 100}%` }} />
+        </span>
+      </StatTile>
       <StatTile
-        label="Total cost (priced runs)"
-        value={formatCost(pricedTotal)}
-        aside={
-          unpricedCount > 0 && (
-            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
-              {unpricedCount} unpriced {unpricedCount === 1 ? "run" : "runs"}
-            </span>
-          )
-        }
-        note="Unpriced runs have no cost in the data and are not counted as $0"
-      />
-    </div>
-  );
-}
-
-function runsLabel(count: number): string {
-  return `${count} ${count === 1 ? "run" : "runs"}`;
-}
-
-function runsPerDaySummary(days: DayCount[]): string {
-  if (days.length === 0) return "No runs to show.";
-  // On a tie, the earliest day wins, because reduce keeps the first one it found.
-  const busiest = days.reduce((best, day) => (day.count > best.count ? day : best));
-  const quietest = days.reduce((least, day) => (day.count < least.count ? day : least));
-  const emptyDays = days.filter((day) => day.count === 0).length;
-  return (
-    `${days.length} days from ${formatDayLabel(days[0].date)} to ${formatDayLabel(days[days.length - 1].date)}. ` +
-    `Busiest: ${formatDayLabel(busiest.date)} (${runsLabel(busiest.count)}). ` +
-    `Quietest: ${formatDayLabel(quietest.date)} (${runsLabel(quietest.count)}). ` +
-    `Days with no runs: ${emptyDays}. Click a bar to see that day's runs.`
-  );
-}
-
-function RunsPerDayTable({ days }: { days: DayCount[] }) {
-  return (
-    <table className="w-full max-w-sm text-left">
-      <thead className="text-xs uppercase text-slate-600">
-        <tr>
-          <th className="py-1">Day (UTC)</th>
-          <th className="py-1 text-right">Runs</th>
-        </tr>
-      </thead>
-      <tbody>
-        {days.map((day) => (
-          <tr key={day.date} className="border-t border-slate-100">
-            <td className="py-1">
-              <Link href={runsForDayHref(day.date)} className="text-blue-700 hover:underline">
-                {formatDayLabel(day.date)}
-              </Link>
-            </td>
-            <td className="py-1 text-right">{day.count}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-function AgentLink({ agent }: { agent: AgentStats }) {
-  return (
-    <Link href={runsForAgentHref(agent.agent)} className="text-blue-700 hover:underline">
-      {agent.agent}
-    </Link>
-  );
-}
-
-function costSummary(agents: AgentStats[]): string {
-  if (agents.length === 0) return "No runs to show.";
-  const highest = agents.reduce((best, agent) => (agent.total_cost_usd > best.total_cost_usd ? agent : best));
-  const lowest = agents.reduce((least, agent) => (agent.total_cost_usd < least.total_cost_usd ? agent : least));
-  const unpriced = agents.reduce((sum, agent) => sum + agent.unpriced_count, 0);
-  const agentsWithUnpriced = agents.filter((agent) => agent.unpriced_count > 0).length;
-  return (
-    `Highest: ${highest.agent} (${formatCost(highest.total_cost_usd)}). ` +
-    `Lowest: ${lowest.agent} (${formatCost(lowest.total_cost_usd)}). ` +
-    `${runsLabel(unpriced)} across ${agentsWithUnpriced} agents have no price and are left out of the totals. ` +
-    `Click a bar to see that agent's runs.`
-  );
-}
-
-function AgentCostTable({ agents }: { agents: AgentStats[] }) {
-  return (
-    <table className="w-full text-left">
-      <thead className="text-xs uppercase text-slate-600">
-        <tr>
-          <th className="py-1">Agent</th>
-          <th className="py-1 text-right">Priced total</th>
-          <th className="py-1 text-right">Priced runs</th>
-          <th className="py-1 text-right">Unpriced runs</th>
-        </tr>
-      </thead>
-      <tbody>
-        {agents.map((agent) => (
-          <tr key={agent.agent} className="border-t border-slate-100">
-            <td className="py-1">
-              <AgentLink agent={agent} />
-            </td>
-            <td className="py-1 text-right font-mono">{formatPricedTotal(agent.total_cost_usd, agent.unpriced_count)}</td>
-            <td className="py-1 text-right">{agent.priced_count}</td>
-            <td className="py-1 text-right">{agent.unpriced_count}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-function statusSummary(agents: AgentStats[]): string {
-  // An agent with only running runs has no rate yet, so it cannot be best or worst.
-  const rated = agents.filter((agent) => agent.success_rate !== null);
-  if (rated.length === 0) return "No finished runs yet, so there is no success rate to compare.";
-  const rate = (agent: AgentStats) => agent.success_rate ?? 0;
-  const best = rated.reduce((top, agent) => (rate(agent) > rate(top) ? agent : top));
-  const worst = rated.reduce((bottom, agent) => (rate(agent) < rate(bottom) ? agent : bottom));
-  return (
-    `Best success rate: ${best.agent} (${formatPercent(best.success_rate)}). ` +
-    `Lowest: ${worst.agent} (${formatPercent(worst.success_rate)}). ` +
-    `Running runs are shown but not counted in the rate. Click a bar to see that agent's runs.`
-  );
-}
-
-function AgentStatusTable({ agents }: { agents: AgentStats[] }) {
-  return (
-    <table className="w-full text-left">
-      <thead className="text-xs uppercase text-slate-600">
-        <tr>
-          <th className="py-1">Agent</th>
-          <th className="py-1 text-right">Succeeded</th>
-          <th className="py-1 text-right">Failed</th>
-          <th className="py-1 text-right">Cancelled</th>
-          <th className="py-1 text-right">Running</th>
-          <th className="py-1 text-right">Success rate</th>
-        </tr>
-      </thead>
-      <tbody>
-        {agents.map((agent) => (
-          <tr key={agent.agent} className="border-t border-slate-100">
-            <td className="py-1">
-              <AgentLink agent={agent} />
-            </td>
-            <td className="py-1 text-right">{agent.succeeded}</td>
-            <td className="py-1 text-right">{agent.failed}</td>
-            <td className="py-1 text-right">{agent.cancelled}</td>
-            <td className="py-1 text-right">{agent.running}</td>
-            <td className="py-1 text-right">{formatPercent(agent.success_rate)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+        label="Median duration"
+        value={durationText(duration.median_ms)}
+        note={`${duration.completed_count} runs with a valid duration`}
+      >
+        <PositionBar
+          percent={positionBetween(duration.median_ms, duration.min_ms, duration.max_ms)}
+          title={`Where the median sits between ${range}`}
+        />
+      </StatTile>
+      <StatTile label="p95 duration" value={durationText(duration.p95_ms)} note={`Nearest-rank, same ${duration.completed_count} runs`}>
+        <PositionBar
+          percent={positionBetween(duration.p95_ms, duration.min_ms, duration.max_ms)}
+          title={`Where p95 sits between ${range}`}
+        />
+      </StatTile>
+      <StatTile label="Total cost (priced runs)" value={formatCost(pricedTotal)} isMono>
+        {unpricedCount > 0 ? (
+          <Link
+            href="/runs"
+            title="Runs with no price are not counted as $0"
+            className="self-start rounded-full border border-warn/25 bg-warn/12 px-[9px] py-[3px] text-[11px] text-warn"
+          >
+            {unpricedCount} unpriced {unpricedCount === 1 ? "run" : "runs"} →
+          </Link>
+        ) : (
+          <span className="text-xs text-dim">Every run has a price</span>
+        )}
+      </StatTile>
+    </section>
   );
 }
 
 function DataWarnings({ warnings }: { warnings: string[] }) {
   if (warnings.length === 0) return null;
   return (
-    <details className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
-      <summary className="cursor-pointer font-medium">⚠ Data warnings ({warnings.length})</summary>
-      <ul className="mt-2 list-disc space-y-1 pl-5">
-        {warnings.map((warning) => (
-          <li key={warning}>{warning}</li>
-        ))}
+    <details className="rounded-[14px] border border-warn/25 bg-warn/[0.06] px-5 py-4 text-warn">
+      <summary className="cursor-pointer text-sm">
+        ⚠ Data warnings ({warnings.length}) · what the loader flagged instead of silently fixing
+      </summary>
+      <ul className="mt-3 list-disc pl-[18px] text-[13px] leading-[1.8] text-[#f5f3ff]">
+        {warnings.map((warning) => {
+          const { runId, text } = splitWarning(warning);
+          return (
+            <li key={warning}>
+              {runId && (
+                <>
+                  <Link href={runDetailHref(runId, DEFAULT_FILTERS)} className="font-mono text-white underline">
+                    {runId}
+                  </Link>
+                  :{" "}
+                </>
+              )}
+              {text}
+            </li>
+          );
+        })}
       </ul>
     </details>
   );
@@ -216,35 +152,40 @@ export default async function DashboardPage() {
   try {
     stats = await fetchStats();
   } catch (error) {
-    return <ErrorPanel title="The dashboard could not be loaded" message={describeError(error)} />;
+    return (
+      <div className="pt-12 pb-[72px]">
+        <ErrorPanel title="The dashboard could not be loaded" message={describeError(error)} />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
+    <div className="flex flex-col gap-6 pt-12 pb-[72px]">
+      <div className="flex flex-wrap items-center justify-between gap-6">
+        <PageHeading eyebrow={dashboardEyebrow(stats.overall.total, stats.runs_per_day)} title="Dashboard">
+          Global numbers from /api/stats. Unpriced runs are never counted as $0.
+        </PageHeading>
+        <OutcomeDonut counts={stats.overall} />
+      </div>
       <StatTiles stats={stats} />
-      <ChartSection
-        id="runs-per-day"
-        title="Runs per day"
-        summary={runsPerDaySummary(stats.runs_per_day)}
-        chart={<RunsPerDayChart days={stats.runs_per_day} />}
-        table={<RunsPerDayTable days={stats.runs_per_day} />}
-      />
-      <div className="grid gap-6 lg:grid-cols-2">
+      <ChartSection id="runs-per-day" title="Runs per day" summary={runsPerDaySummary(stats.runs_per_day)}>
+        <RunsPerDayChart days={stats.runs_per_day} />
+      </ChartSection>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] gap-4">
         <ChartSection
           id="cost-per-agent"
-          title="Cost per agent (priced runs)"
+          title={
+            <>
+              Cost per agent <span className="font-normal text-dim">(priced runs)</span>
+            </>
+          }
           summary={costSummary(stats.per_agent)}
-          chart={<AgentCostChart agents={stats.per_agent} />}
-          table={<AgentCostTable agents={stats.per_agent} />}
-        />
-        <ChartSection
-          id="status-per-agent"
-          title="Runs by status per agent"
-          summary={statusSummary(stats.per_agent)}
-          chart={<AgentStatusChart agents={stats.per_agent} />}
-          table={<AgentStatusTable agents={stats.per_agent} />}
-        />
+        >
+          <AgentCostChart agents={stats.per_agent} />
+        </ChartSection>
+        <ChartSection id="status-per-agent" title="Runs by status per agent" summary={statusSummary(stats.per_agent)}>
+          <AgentStatusChart agents={stats.per_agent} />
+        </ChartSection>
       </div>
       <DataWarnings warnings={stats.data_warnings} />
     </div>

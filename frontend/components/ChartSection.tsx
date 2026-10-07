@@ -2,26 +2,22 @@ import type { ReactNode } from "react";
 
 type ChartSectionProps = {
   id: string;
-  title: string;
+  title: ReactNode;
   // One sentence with the main takeaway, for people who cannot see the chart.
   summary: string;
-  chart: ReactNode;
-  // The exact numbers behind the chart, with links, for keyboard and screen reader users.
-  table: ReactNode;
+  children: ReactNode;
 };
 
-export default function ChartSection({ id, title, summary, chart, table }: ChartSectionProps) {
+export default function ChartSection({ id, title, summary, children }: ChartSectionProps) {
   return (
-    <section aria-labelledby={id} className="rounded-lg border border-slate-200 bg-white p-5">
-      <h2 id={id} className="text-lg font-semibold">
-        {title}
-      </h2>
-      <p className="mt-1 text-sm text-slate-600">{summary}</p>
-      <div className="mt-4">{chart}</div>
-      <details className="mt-4 text-sm">
-        <summary className="cursor-pointer text-blue-700">Show the numbers</summary>
-        <div className="mt-2 max-h-80 overflow-auto">{table}</div>
-      </details>
+    <section aria-labelledby={id} className="glass flex flex-col gap-4 rounded-[18px] p-6">
+      <div className="flex flex-col gap-1">
+        <h2 id={id} className="text-lg font-semibold">
+          {title}
+        </h2>
+        <p className="text-[13px] text-muted">{summary}</p>
+      </div>
+      {children}
     </section>
   );
 }
