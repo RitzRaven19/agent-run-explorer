@@ -7,7 +7,7 @@
 - In the follow-up interview, the company will point at any line and ask why it's written that way, what a type is at that point, and what breaks if it's deleted. I (Ritu) must be able to answer for every line.
 
 ## Authorship (strict)
-- I am the only author. Never add "Co-Authored-By", "Generated with Claude", or any AI attribution to commits, PR descriptions, code comments, README, or any file.
+- Commits are authored by Ritu Dey with no Co-Authored-By trailers; AI use is disclosed openly in README.md under "How AI was used".
 - Commit using the git identity already configured on this machine. Never change git config.
 
 ## How to work with me
@@ -61,7 +61,7 @@
 
 ## The 4 open decisions in the brief (DECIDED, Phase 1)
 Record these in DECISIONS.md in Phase 10.
-1. Null cost: an agent's total cost is the sum of its priced runs only. The API also returns priced_count and unpriced_count per agent, and the UI shows e.g. "$1.24 (1 run unpriced)". Null is never treated as 0, and a cost of $0.00 is kept as a real value.
+1. Null cost: an agent's total cost is the sum of its priced runs only. The API also returns priced_count and unpriced_count per agent, and the UI shows e.g. "$1.24 (1 unpriced)". Null is never treated as 0, and a cost of $0.00 is kept as a real value.
 2. Running runs:
    - Success rate = succeeded / (succeeded + failed + cancelled). Running runs are excluded and reported as their own count.
    - Sorting by duration or cost puts nulls last in both directions, with id as the tie-breaker. Sorting by started_at treats running runs like any other.
