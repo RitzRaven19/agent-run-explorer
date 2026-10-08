@@ -12,66 +12,25 @@ A small web tool for browsing and understanding AI agent runs. A FastAPI backend
 
 The backend is on Render's free tier, which sleeps after about 15 minutes without traffic. If it is asleep, the first request can take up to about a minute while it wakes. A GitHub Actions workflow (`.github/workflows/keep-awake.yml`) pings it every 14 minutes, so this should be rare.
 
-## Features
+## Quick tour (2 minutes)
 
-Mapped to the brief's "Must build":
+One click each, on the live app:
 
-- **`GET /api/runs`**: pagination with a total count, multi-value `status`, `agent` and `tool` filters (`tool` matches runs where any step used it), a `started_at` date range, text search over the prompt, sort by `started_at`, `duration_ms` or `cost_usd`. All filters compose in one request. Steps are not included in list items.
-- **`GET /api/runs/{id}`**: one run with its steps; a proper 404 for an unknown id.
-- **`GET /api/stats`**: run counts and success rate (overall and per agent), median and p95 duration, total cost per agent (with priced/unpriced counts), runs per day (zero-filled over the dataset's date range, clipped to any requested dates). Accepts the same filters as `/api/runs`.
-- **`POST /api/runs/{id}/explain`**: streamed text from a deterministic mock provider (no API key needed), chosen by `EXPLAIN_PROVIDER`.
-- **`/runs`**: server-rendered list. All state (filters, search, sort, page) is in the URL, so a filtered view can be copied and reopened. Visible loading, empty and error states. Also:
-  - **Quick investigations:** buttons above the filters (Failures, Slowest, Most expensive, Running now). Each one only rewrites the URL, replacing the current filters; the active one is highlighted and clicking it again returns to `/runs`.
-  - **Tool filter:** chips for the five tools, combined with every other filter.
-  - **Request indicator:** a small line under the list, such as `List request: 84 ms · 3 requests this session`. It shows the time of the list request and counts the list requests this browser tab has made, so you can see that a filter change costs one request and typing in the search box costs one per pause, not one per keystroke. A filter change makes exactly one backend call, the list request. (The counts on the status and agent chips and the header pill come from the unfiltered stats, which the Next.js server keeps for a few minutes.)
-  - **Phones:** the filters collapse behind a "Filters (N active)" button, and the table shows a "scroll →" hint while it has more to the right.
-  - **Keyboard:** ↑ ↓ move between rows (starting at the first or last row when nothing is focused) and Enter opens the run, keeping the list's filters for "Back to runs". Arrow keys are never taken from the search box, selects or buttons.
-- **`/runs/[id]`**: metadata, the error (if any), steps in order with duration and tokens, step input/output readable in place, warnings, and a streaming "Explain this run" button. `/runs/run_0042#step-3` deep-links to a step: it is highlighted, scrolled into view, and its input and output open fully expanded even when long.
-- **`/dashboard`**: stat tiles, one card per agent (runs, success rate, priced cost with its unpriced count, and a link to that agent's runs) and three charts (runs per day with a y-axis, cost per agent, runs by status per agent). Clicking a bar opens the matching filtered `/runs`. A collapsible box lists the data anomalies.
-- **Branding:** a hex agent mark as the app icon and in the header.
-- **Tests**: 75 backend tests (including filters composing and a statistic checked against a hand-computed value) and 112 frontend tests (Vitest).
+1. [Failed runs](https://agent-run-explorer-lovat.vercel.app/runs?status=failed): the list with one filter in the URL (44 runs).
+2. [Search "apology"](https://agent-run-explorer-lovat.vercel.app/runs?q=apology): text search over prompts, also in the URL.
+3. [run_0136](https://agent-run-explorer-lovat.vercel.app/runs/run_0136): a failed run with its error, the step timeline and the streaming "Explain this run" button.
+4. [run_0042, step 3](https://agent-run-explorer-lovat.vercel.app/runs/run_0042#step-3): a deep link that opens and highlights one step.
+5. [run_0089](https://agent-run-explorer-lovat.vercel.app/runs/run_0089): an error that points at step 3, but the run has no steps. The page says so instead of crashing.
+6. [run_0064](https://agent-run-explorer-lovat.vercel.app/runs/run_0064): a negative duration in the data, kept as-is and flagged with a warning.
+7. [Dashboard](https://agent-run-explorer-lovat.vercel.app/dashboard): global stats and charts. 72.77% success, median 23.6 s, $8.710512 plus 3 unpriced runs.
 
-Data problems in the dataset (a duplicate id, a negative duration, a run with no steps, unpriced runs) are detected at load time, reported in `data_warnings`, and shown in the UI. See [DECISIONS.md](DECISIONS.md).
+## Screenshots
 
-## Brief checklist
+![The runs list](docs/screenshots/runs.png)
 
-| Brief item | Where it is |
-|---|---|
-| **Must:** `GET /api/runs` (pagination, multi-value filters, date range, search, sort, composing) | `backend/app/main.py` (`list_runs`, shared `get_filters`), `backend/app/filters.py` |
-| **Must:** `GET /api/runs/{id}` with a proper 404 | `backend/app/main.py` (`get_run`) |
-| **Must:** `GET /api/stats` | `backend/app/stats.py`, `backend/app/main.py` (`get_stats`) |
-| **Must:** `POST /api/runs/{id}/explain`, streamed, mock provider | `backend/app/explain.py`, `backend/app/main.py` (`explain_run`) |
-| **Must:** `/runs` with URL state, loading, empty and error states | `frontend/app/runs/`, `frontend/components/RunFilters.tsx`, `RunsResults.tsx`, `frontend/lib/filters.ts` |
-| **Must:** `/runs/[id]` with error, steps, streaming Explain | `frontend/app/runs/[id]/page.tsx`, `StepsTimeline.tsx`, `StepValue.tsx`, `ExplainRun.tsx` |
-| **Must:** `/dashboard` with charts | `frontend/app/dashboard/page.tsx`, `frontend/components/charts/` |
-| **Must:** backend tests (filters compose, a hand-computed statistic) | `backend/tests/test_runs.py`, `backend/tests/test_stats.py` with `fixtures/stats_fixture.jsonl` |
-| **Must:** a frontend test | `frontend/tests/` (Vitest) |
-| **Must:** the four decisions, 20-million-run answer, what's next | [DECISIONS.md](DECISIONS.md) |
-| **Should:** `tool` filter | `filters.py` and `main.py` (backend), `RunFilters.tsx` chips (frontend) |
-| **Should:** deep link to a step, opened expanded | `frontend/lib/useLocationHash.ts`, `StepValue.tsx` |
-| **Should:** keyboard navigation in the list | `frontend/components/KeyboardRows.tsx`, `frontend/lib/rowNavigation.ts` |
-| **Should:** request duration and count indicator | `frontend/components/RequestIndicator.tsx`, `frontend/lib/requestCounter.ts`, `fetchRunsTimed` in `frontend/lib/api.ts` |
-| **Stretch:** cursor pagination, 500-step runs, Docker Compose | Not built. |
+![A failed run: error, step timeline and steps](docs/screenshots/run.png)
 
-More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (design and request flows) and [SECURITY.md](SECURITY.md) (current posture and what production would need).
-
-## Architecture
-
-```mermaid
-flowchart LR
-    B[Browser]
-    N["Next.js server components<br/>(Vercel)"]
-    F["FastAPI<br/>(Render)"]
-    D[("data/runs.jsonl<br/>in memory")]
-    B -- "pages: /runs, /runs/id, /dashboard" --> N
-    N -- "HTTP: runs, run, stats" --> F
-    B -- "POST /explain (streamed)" --> F
-    F --- D
-```
-
-- **Backend**: Python 3.12, FastAPI, Pydantic. The JSONL file is read into memory once at startup.
-- **Frontend**: Next.js (App Router), React, TypeScript, Tailwind. There is no chart library: the dashboard's charts are plain HTML and CSS bars. Fonts come from the `geist` npm package, so the build needs no access to Google Fonts.
-- Two separate processes over HTTP. The Next.js server fetches data from the API; the browser calls the API directly only for the streaming explain, so the text is not buffered by an extra hop.
+![The dashboard](docs/screenshots/dashboard.png)
 
 ## Run it locally
 
@@ -132,9 +91,10 @@ The backend needs no `.env` file: every backend variable has a default. The fron
 .venv/bin/python -m pytest          # Windows: .venv\Scripts\python -m pytest
 
 # Frontend (from frontend/)
-npm test                            # Vitest, 112 tests
+npm test                            # Vitest, 119 tests in 9 files
 npm run lint
-npm run build
+npx tsc --noEmit
+npm run build                       # needs the backend running (it fetches data)
 ```
 
 ## Environment variables
@@ -251,6 +211,53 @@ Errors: `404` for an unknown id, returned before any streaming starts.
 **CORS:** the browser calls the API directly for Explain, so the backend must allow the frontend's origin through `CORS_ORIGINS`. Server-side fetches from Next.js are not subject to CORS. Vercel preview URLs are different origins and are not allowed, so Explain works on the production URL only.
 
 **Keep-awake:** `.github/workflows/keep-awake.yml` calls `/api/health` every 14 minutes. It reads the backend address from the GitHub repository variable `BACKEND_URL`.
+
+## Brief checklist
+
+| Brief item | Live / where it is in the code |
+|---|---|
+| **Must:** `GET /api/runs` (pagination, multi-value filters, date range, search, sort, composing) | [live](https://agent-run-explorer.onrender.com/api/runs?status=failed&agent=kpi-analyst&page_size=2) · `backend/app/filters.py`, `main.py` |
+| **Must:** `GET /api/runs/{id}` with a proper 404 | [live](https://agent-run-explorer.onrender.com/api/runs/run_0136) · [404](https://agent-run-explorer.onrender.com/api/runs/run_9999) · `main.py` |
+| **Must:** `GET /api/stats` | [live](https://agent-run-explorer.onrender.com/api/stats) · `backend/app/stats.py` |
+| **Must:** `POST /api/runs/{id}/explain`, streamed, mock provider | [try it](https://agent-run-explorer-lovat.vercel.app/runs/run_0136) · `backend/app/explain.py` |
+| **Must:** `/runs` with URL state, loading, empty and error states | [live](https://agent-run-explorer-lovat.vercel.app/runs?status=failed) · `frontend/app/runs/`, `lib/filters.ts` |
+| **Must:** `/runs/[id]` with error, steps, streaming Explain | [live](https://agent-run-explorer-lovat.vercel.app/runs/run_0136) · `frontend/app/runs/[id]/page.tsx`, `ExplainRun.tsx` |
+| **Must:** `/dashboard` with charts | [live](https://agent-run-explorer-lovat.vercel.app/dashboard) · `frontend/components/charts/` |
+| **Must:** backend tests (filters compose, a hand-computed statistic) | `backend/tests/test_runs.py`, `test_stats.py` |
+| **Must:** a frontend test | `frontend/tests/` (Vitest) |
+| **Must:** the four decisions, 20-million-run answer, what's next | [DECISIONS.md](DECISIONS.md) |
+| **Should:** `tool` filter | [live](https://agent-run-explorer-lovat.vercel.app/runs?tool=sql) · `filters.py`, `RunFilters.tsx` |
+| **Should:** deep link to a step, opened expanded | [live](https://agent-run-explorer-lovat.vercel.app/runs/run_0042#step-3) · `lib/useLocationHash.ts`, `StepValue.tsx` |
+| **Should:** keyboard navigation in the list | [live](https://agent-run-explorer-lovat.vercel.app/runs) (↑ ↓ Enter) · `KeyboardRows.tsx` |
+| **Should:** request duration and count indicator | [live](https://agent-run-explorer-lovat.vercel.app/runs) (under the list) · `RequestIndicator.tsx`, `lib/requestCounter.ts` |
+| **Stretch:** cursor pagination, 500-step runs, Docker Compose | Not built. |
+
+More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (design and request flows) and [SECURITY.md](SECURITY.md) (current posture and what production would need).
+
+## Features
+
+Mapped to the brief's "Must build":
+
+- **`GET /api/runs`**: pagination with a total count, multi-value `status`, `agent` and `tool` filters (`tool` matches runs where any step used it), a `started_at` date range, text search over the prompt, sort by `started_at`, `duration_ms` or `cost_usd`. All filters compose in one request. Steps are not included in list items.
+- **`GET /api/runs/{id}`**: one run with its steps; a proper 404 for an unknown id.
+- **`GET /api/stats`**: run counts and success rate (overall and per agent), median and p95 duration, total cost per agent (with priced/unpriced counts), runs per day (zero-filled over the dataset's date range, clipped to any requested dates). Accepts the same filters as `/api/runs`.
+- **`POST /api/runs/{id}/explain`**: streamed text from a deterministic mock provider (no API key needed), chosen by `EXPLAIN_PROVIDER`.
+- **`/runs`**: server-rendered list. All state (filters, search, sort, page) is in the URL, so a filtered view can be copied and reopened. Visible loading, empty and error states. Also:
+  - **Quick investigations:** buttons above the filters (Failures, Slowest, Most expensive, Running now). Each one only rewrites the URL, replacing the current filters; the active one is highlighted and clicking it again returns to `/runs`.
+  - **Tool filter:** chips for the five tools, combined with every other filter.
+  - **Request indicator:** a small line under the list, such as `List request: 84 ms · 3 requests this session`. It shows the time of the list request and counts the list requests this browser tab has made, so you can see that a filter change costs one request and typing in the search box costs one per pause, not one per keystroke. A filter change makes exactly one backend call, the list request. (The counts on the status and agent chips and the header pill come from the unfiltered stats, which the Next.js server keeps for a few minutes.)
+  - **Phones:** the filters collapse behind a "Filters (N active)" button, and the table shows a "scroll →" hint while it has more to the right.
+  - **Keyboard:** ↑ ↓ move between rows (starting at the first or last row when nothing is focused) and Enter opens the run, keeping the list's filters for "Back to runs". Arrow keys are never taken from the search box, selects or buttons.
+- **`/runs/[id]`**: metadata, the error (if any), steps in order with duration and tokens, step input/output readable in place, warnings, and a streaming "Explain this run" button. `/runs/run_0042#step-3` deep-links to a step: it is highlighted, scrolled into view, and its input and output open fully expanded even when long.
+- **`/dashboard`**: stat tiles, one card per agent (runs, success rate, priced cost with its unpriced count, and a link to that agent's runs) and three charts (runs per day with a y-axis, cost per agent, runs by status per agent). Clicking a bar opens the matching filtered `/runs`. A collapsible box lists the data anomalies.
+- **Branding:** a hex agent mark as the app icon and in the header.
+- **Tests**: 75 backend tests (including filters composing and a statistic checked against a hand-computed value) and 119 frontend tests (Vitest).
+
+Data problems in the dataset (a duplicate id, a negative duration, a run with no steps, unpriced runs) are detected at load time, reported in `data_warnings`, and shown in the UI. See [DECISIONS.md](DECISIONS.md).
+
+## Architecture
+
+Two processes over HTTP: a FastAPI backend (Render) that holds the 200 runs in memory, and a Next.js frontend (Vercel) that renders the pages on the server. The browser calls the API directly only for the streaming Explain. The diagram, request flows and design decisions are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Project structure
 
