@@ -106,7 +106,7 @@ function StatTiles({ stats }: { stats: StatsResponse }) {
           <Link
             href="/runs"
             title="Runs with no price are not counted as $0"
-            className="self-start rounded-full border border-warn/25 bg-warn/12 px-[9px] py-[3px] text-xs text-warn"
+            className="inline-flex self-start rounded-full border border-warn/25 bg-warn/12 px-[9px] py-[3px] text-xs text-warn max-md:min-h-10 max-md:items-center"
           >
             {unpricedCount} unpriced {unpricedCount === 1 ? "run" : "runs"} →
           </Link>
@@ -122,7 +122,7 @@ function DataWarnings({ warnings }: { warnings: string[] }) {
   if (warnings.length === 0) return null;
   return (
     <details className="group glass rounded-2xl px-5 py-4">
-      <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center gap-3 max-md:min-h-10 [&::-webkit-details-marker]:hidden">
         <span className="flex flex-col gap-0.5">
           <span className="text-sm font-semibold text-ink">
             <span aria-hidden="true" className="text-warn">
@@ -153,7 +153,7 @@ function DataWarnings({ warnings }: { warnings: string[] }) {
               {runId && (
                 <Link
                   href={runDetailHref(runId, DEFAULT_FILTERS)}
-                  className="shrink-0 rounded-full bg-accent/15 px-2.5 py-0.5 font-mono text-xs text-accent hover:bg-accent/25"
+                  className="relative shrink-0 rounded-full bg-accent/15 px-2.5 py-0.5 font-mono text-xs text-accent hover:bg-accent/25 max-md:after:absolute max-md:after:inset-x-0 max-md:after:-inset-y-2"
                 >
                   {runId}
                 </Link>

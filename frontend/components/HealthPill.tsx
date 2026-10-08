@@ -3,7 +3,7 @@ import { getHealth } from "@/lib/globalStats";
 import type { HealthResponse } from "@/lib/types";
 
 const PILL_STYLE =
-  "ml-auto flex items-center gap-2.5 rounded-full border border-[rgba(167,139,250,0.2)] bg-[rgba(139,92,246,0.06)] px-3 py-1.5 text-xs text-muted";
+  "ml-auto flex items-center gap-2.5 rounded-full border border-[rgba(167,139,250,0.2)] bg-[rgba(139,92,246,0.06)] px-3 py-1.5 text-xs text-muted max-md:min-h-10";
 
 // Placeholder while the health check loads (and in the static shell), the same size as the real pill.
 export function HealthPillPlaceholder() {

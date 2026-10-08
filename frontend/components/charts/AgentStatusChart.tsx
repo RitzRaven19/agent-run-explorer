@@ -14,7 +14,7 @@ export default function AgentStatusChart({ agents }: { agents: AgentStats[] }) {
           href={runsForAgentHref(agent.agent)}
           title={agentStatusLabel(agent)}
           aria-label={agentStatusLabel(agent)}
-          className="grid grid-cols-[130px_minmax(0,1fr)] items-center gap-3"
+          className="grid grid-cols-[130px_minmax(0,1fr)] items-center gap-3 max-md:min-h-10"
         >
           <span className="text-right text-[13px] text-soft">{agent.agent}</span>
           <span className="flex h-[18px] overflow-hidden rounded-md" style={{ width: `${agentBarPercent(agent, agents)}%` }}>

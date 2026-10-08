@@ -28,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
           <header className="relative border-b border-white/[0.07] bg-page/60 backdrop-blur-xl">
             <nav aria-label="Main" className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-7 px-6 py-3.5">
-              <Link href="/runs" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.01em]">
+              <Link href="/runs" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-[-0.01em] max-md:min-h-10">
                 <AppMark />
                 Agent Run Explorer
               </Link>

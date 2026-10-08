@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PageProps<"/runs/[id]">): Pro
 
 function BackLink({ href }: { href: string }) {
   return (
-    <Link href={href} className="self-start text-[13px] text-muted">
+    <Link href={href} className="self-start text-[13px] text-muted max-md:flex max-md:min-h-10 max-md:items-center">
       ← Back to runs
     </Link>
   );

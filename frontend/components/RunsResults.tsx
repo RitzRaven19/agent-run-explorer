@@ -13,8 +13,9 @@ import { formatDateTimeUtc, formatDurationSeconds, promptPreview } from "@/lib/f
 import { getGlobalStats } from "@/lib/globalStats";
 import type { RunSummary } from "@/lib/types";
 
-const PAGE_LINK_STYLE = "rounded-[10px] border border-white/[0.14] px-3 py-2";
-const PAGE_DISABLED_STYLE = "rounded-[10px] border border-white/[0.06] px-3 py-2 text-faint";
+const PAGE_TAP = "max-md:inline-flex max-md:min-h-10 max-md:items-center";
+const PAGE_LINK_STYLE = `rounded-[10px] border border-white/[0.14] px-3 py-2 ${PAGE_TAP}`;
+const PAGE_DISABLED_STYLE = `rounded-[10px] border border-white/[0.06] px-3 py-2 text-faint ${PAGE_TAP}`;
 
 function runsHref(filters: RunFilters, page: number): string {
   return runsListHref({ ...filters, page });
@@ -29,7 +30,7 @@ function RunRow({ run, filters, scale }: { run: RunSummary; filters: RunFilters;
       }`}
     >
       <td className="px-[18px] py-3.5 font-mono text-[13px] whitespace-nowrap">
-        <Link href={runDetailHref(run.id, filters)} data-run-link className="text-white">
+        <Link href={runDetailHref(run.id, filters)} data-run-link className="relative text-white max-md:after:absolute max-md:after:inset-x-0 max-md:after:-inset-y-3">
           {run.id}
         </Link>
         {run.warnings.length > 0 && (

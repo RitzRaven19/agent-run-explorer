@@ -15,7 +15,7 @@ export default function AgentCostChart({ agents }: { agents: AgentStats[] }) {
           key={agent.agent}
           href={runsForAgentHref(agent.agent)}
           aria-label={agentCostLabel(agent)}
-          className="grid grid-cols-[130px_minmax(0,1fr)] items-center gap-3"
+          className="grid grid-cols-[130px_minmax(0,1fr)] items-center gap-3 max-md:min-h-10"
         >
           <span className="text-right text-[13px] text-soft">{agent.agent}</span>
           <span className="flex min-w-0 items-center gap-2.5">

@@ -29,7 +29,7 @@ export default function StepWaterfall({ run, failingIndex }: { run: Pick<Run, "s
               key={bar.index}
               href={`#${stepAnchorId(bar.index)}`}
               title={`Step ${bar.index} · ${bar.name} · ${bar.tool} · ${isFailing ? "failed after " : ""}${time}${share}`}
-              className={`${WATERFALL_ROW} items-center text-xs`}
+              className={`${WATERFALL_ROW} items-center text-xs max-md:min-h-10`}
             >
               <span className={`truncate ${isFailing ? "text-[#f9a8d4]" : "text-soft"}`}>
                 {bar.index} · {bar.name}

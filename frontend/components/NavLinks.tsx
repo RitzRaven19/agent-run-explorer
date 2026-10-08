@@ -19,7 +19,7 @@ function NavLinkList({ currentPath }: { currentPath: string | null }) {
             key={href}
             href={href}
             aria-current={isCurrent ? "page" : undefined}
-            className={`rounded-lg px-3 py-[7px] ${isCurrent ? "bg-[rgba(124,58,237,0.28)] text-white" : "text-muted"}`}
+            className={`rounded-lg px-3 py-[7px] max-md:flex max-md:min-h-10 max-md:items-center ${isCurrent ? "bg-[rgba(124,58,237,0.28)] text-white" : "text-muted"}`}
           >
             {label}
           </Link>
