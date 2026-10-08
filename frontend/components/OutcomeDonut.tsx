@@ -8,7 +8,7 @@ import type { StatusCounts } from "@/lib/types";
 // outcome yet, so they are listed beside the ring instead of being part of it. Clicking opens the runs list.
 export default function OutcomeDonut({ counts }: { counts: StatusCounts }) {
   const finished = finishedCount(counts);
-  const rate = counts.success_rate === null ? "—" : `${(counts.success_rate * 100).toFixed(1)}%`;
+  const rate = formatPercent(counts.success_rate);
 
   return (
     <Link
