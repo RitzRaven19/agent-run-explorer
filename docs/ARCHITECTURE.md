@@ -63,3 +63,25 @@ Render checks out the whole repo (the dataset lives at the root) and starts `uvi
 3. `RunsResults` calls `fetchRunsTimed`, which sends `GET /api/runs?tool=sql` to Render.
 4. FastAPI's `get_filters` validates `tool` against the `ToolName` literal, `filter_runs` keeps runs where any step used `sql`, `sort_runs` and `paginate` produce the page, and the response has `items` (no steps) and `total`.
 5. The server renders the table and the `RequestIndicator`; the browser swaps in the new HTML. The indicator shows the time and one more distinct request.
+
+## Design decisions
+
+The four decisions the brief asked for are in [DECISIONS.md](../DECISIONS.md). These are the smaller ones I made along the way.
+
+- **URL is the single source of truth** for filters, search, sort and page, so a view can be shared. The page is a server component that reads the URL; no separate client state.
+- **`router.replace`, not `push`**, for filter changes, so each keystroke or checkbox doesn't add a Back-button entry. Search is debounced.
+- **Suspense `key`** built from the filters, so the loading skeleton shows again when the filters change.
+- **Server vs client components:** data is fetched in server components; only things that need the browser are client components that receive plain props: the filter bar, quick investigations, Explain, step expand/collapse, keyboard rows, the request indicator, the table scroll hint, scroll-to-step, the nav links and the error panel. The charts and agent cards are server components.
+- **Explain is called from the browser**, straight to the backend. Going through a Next.js server hop could buffer the text and defeat streaming. This is why CORS is needed.
+- **`?from=` back link** carries the list's filters to the detail page. It is validated by parsing it and rebuilding the URL, so a value like `//evil.com` can only ever produce `/runs`.
+- **Tool filter:** a run matches when *any* of its steps uses one of the chosen tools, and a run with no recorded steps (`run_0089`) matches none. It goes through the same shared filter as everything else, so `/api/stats` respects it too.
+- **Request indicator:** the list request is timed on the Next.js server, because that is where the backend call happens. Each request gets an id and the browser counts distinct ids, so React re-running an effect or Back showing an old result can't inflate the count. The agent list is a fixed constant in the frontend (mirroring the backend's `Literal`), so a filter change makes just the one list request. (The counts on the status and agent chips and the header pill come from the unfiltered stats, which the Next.js server keeps for a few minutes.)
+- **Keyboard navigation moves real focus** between the run links instead of keeping a separate "selected row" state, so Enter, focus styles and screen readers use what the browser already provides. It ignores keys with modifiers and never acts while focus is in a text field, select or button.
+- **Deep link opens the step expanded** by reading the URL fragment with `useSyncExternalStore`, because the server never sees the `#` part. Clicking "Jump to step N" works too, but clicking it again when the hash already matches does nothing, so a step you collapsed by hand stays collapsed.
+- **Step numbers start at 0**, matching `index` in the data and `error.step_index`.
+- **Median and p95:** median is the middle value (average of the two middle ones when even); p95 uses nearest-rank (the value at rank ceil(0.95 × n)). Both use only non-running runs with a valid, non-negative duration.
+- **Charts are plain HTML and CSS**, not a chart library. The three charts are simple bars, so a library would add a dependency for little. Each bar is a real link to the matching runs, with a spoken label, and each chart has a one-sentence summary.
+- **Duration bars** in the list are measured against the slowest valid run in the whole dataset (`max_ms` from `/api/stats`, which the Next.js server already keeps for a few minutes), so the same run has the same bar on every page and a filter change still costs one backend call. If the stats are unavailable the list falls back to the slowest run on the page, and the tooltip says so. The dashboard uses `min_ms` and `max_ms` to place the median and p95 on their tile bars.
+- **Vitest on pure functions:** URL parsing, the back-link safety check and formatting are where bugs would be silent. A component or end-to-end test would need extra tooling that I judged not worth it in the time.
+- **Hardening:** bounded stats range, input limits, id index.
+- **Free hosting:** Render (backend) and Vercel (frontend), plus a GitHub Actions ping every 14 minutes to avoid Render's idle sleep. A best-effort workaround, not production practice.
