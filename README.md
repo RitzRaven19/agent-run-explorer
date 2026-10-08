@@ -93,8 +93,8 @@ The backend needs no `.env` file: every backend variable has a default. The fron
 # Frontend (from frontend/)
 npm test                            # Vitest, 119 tests in 9 files
 npm run lint
-npx tsc --noEmit
 npm run build                       # needs the backend running (it fetches data)
+npx tsc --noEmit                    # after the build, which generates Next's route types
 ```
 
 ## Environment variables
